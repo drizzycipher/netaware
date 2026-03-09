@@ -1,0 +1,1375 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>NetAware — Fake Antivirus Simulation</title>
+  <link rel="icon" type="image/png" href="photos/headerlogo.png">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --accent: #03cae4;
+      --accent-strong: #02b3cb;
+      --bg-1: #f4fbff;
+      --panel: #ffffff;
+      --muted: #50606a;
+      --card-border: rgba(3,202,228,0.06);
+      --page-max: 1100px;
+      --shadow: 0 8px 20px rgba(3,202,228,0.06);
+    }
+    body{
+      margin:0;
+      font-family: Inter, Arial, sans-serif;
+      background: linear-gradient(180deg,#eaf8ff 0%, #f7fcff 60%);
+      color:#122028;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      line-height:1.55;
+      padding-top:68px;
+    }
+
+    /* header */
+    .site-header{
+      position:fixed;
+      top:0;
+      left:0;
+      right:0;
+      height:74px;
+      background:#1c1f2b;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      z-index:300;
+      border-bottom:4px solid var(--accent);
+      box-shadow:0 4px 18px rgba(2,11,17,0.05);
+      padding:0 24px;
+    }
+
+    .header-inner{
+      width:100%;
+      display:flex;
+      gap:12px;
+      align-items:center;
+    }
+
+  .logo-circle { width:50px; height:50px; border-radius:50%; background:#03cae4; display:flex; align-items:center; justify-content:center; }
+  .logo-circle img { width:28px; height:28px; object-fit:contain; }
+
+    .brand-name{
+      color:#fff;
+      font-size:1.4rem; 
+      font-weight:700;
+    }
+
+    /* layout */
+    .page{
+      max-width:var(--page-max);
+      margin:10px auto;
+      padding:12px;
+      display:flex;
+      gap:20px;
+      align-items:flex-start;
+    }
+
+    .article{
+      flex:1;
+      background:var(--panel);
+      border-radius:12px;
+      padding:22px;
+      border:1px solid var(--card-border);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+      min-height:300px;
+    }
+
+    .article h1{
+      margin:0 0 8px 0;
+      font-size:1.45rem;
+      color:#023444;
+    }
+
+    .meta{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      color:var(--muted);
+      font-size:0.9rem;
+      margin-bottom:12px;
+      font-weight:600;
+    }
+
+    .lead{
+      color:#15484f;
+      margin-bottom:16px;
+    }
+    .content p{ margin:12px 0; color:#19363c; }
+    .content h3{ margin-top:18px; color:#035a6b }
+    ul{ margin:8px 0 12px 18px }
+
+    .fake-alert-tip{
+      background:#fff6f6;
+      border-left:4px solid #ff6b6b;
+      padding:10px 12px;
+      border-radius:8px;
+      margin:12px 0;
+      color:#6b2a2a;
+      font-weight:600;
+    }
+
+    .sim-column{
+      width:300px;
+      position:sticky;
+      top:102px;
+      align-self:flex-start;
+    }
+    .sim{
+      border-radius:10px;
+      background:linear-gradient(180deg,#f8fdff,#f0faff);
+      padding:12px;
+      margin-bottom:14px;
+      border:1px solid rgba(3,202,228,0.06);
+      box-shadow:0 8px 18px rgba(3,202,228,0.04);
+      text-align:center;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      align-items:center;
+    }
+    #resetSimBtn:hover{
+      background: var(--accent-strong) !important;
+    }
+    #modalDesc {
+      text-align: justify;
+      line-height: 1.4;
+    }
+    .sim img{ width:110%; height:200px; object-fit:fill; border-radius:8px;cursor:pointer;}
+    /* modal base */
+    .modal-overlay{
+      position:fixed;
+      inset:0;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      background:rgba(3,8,12,0.45);
+      z-index:1400;
+      padding:20px;
+    }
+    .modal{
+      width:100%;
+      max-width:460px;
+      background:var(--panel);
+      border-radius:12px;
+      padding:18px;
+      border:1px solid var(--card-border);
+      box-shadow:0 18px 45px rgba(4,29,37,0.12);
+      position:relative;
+    }
+
+    .modal h2{ margin:0 0 8px; color:#052b33 }
+    .modal .sub{ color:var(--muted); margin-bottom:10px; font-size:0.95rem }
+    .scan{ background:#e9fbff; padding:10px; border-radius:8px; font-weight:700; color:#035a6b; margin-bottom:8px }
+    .modal .note{ font-size:0.9rem; color:var(--muted) }
+
+    .dismiss{
+      position:absolute;
+      top:12px;
+      right:12px;
+      background:transparent;
+      border:0;
+      font-size:18px;
+      cursor:pointer;
+      color:var(--muted);
+    }
+
+    .buttons{ display:flex; gap:10px; justify-content:flex-end; margin-top:14px }
+    .btn{ padding:10px 14px; border-radius:10px; border:0; cursor:pointer; font-weight:700 }
+    .btn.secondary{ background:#eef8fb; color:#083b42; border:1px solid rgba(3,202,228,0.06) }
+    .btn.secondary:hover{background: #cad2d4 }
+    .btn.primary{ background:var(--accent); color:#052022; box-shadow:0 8px 30px rgba(3,202,228,0.12) }
+    .btn.primary:hover{background:var(--accent-strong)}
+
+    /* floating quiz */
+    .quiz-btn{
+      position:fixed;
+      bottom:20px;
+      right:20px;
+      width:60px;
+      height:60px;
+      border-radius: 50%;
+      background:var(--accent);
+      color:#022f33;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      font-size: 24px;
+      box-shadow:0 14px 40px rgba(3,202,228,0.14);
+      z-index:400;
+      border:0;
+      cursor:pointer;
+    }
+    .quiz-btn:hover { background: var(--accent-strong) }
+    .quiz-modal {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 200%;
+      max-width: 720px;
+      background: var(--panel);
+      border-radius: 12px;
+      padding: 20px;
+      border: 1px solid var(--card-border);
+      box-shadow: 0 18px 40px rgba(4,29,37,0.12);
+      z-index: 999;
+      display: none;
+      animation: fadeIn 0.2s ease-out;
+    }
+
+    .quiz-modal.active {
+      display: block;
+    }
+
+    .quiz-box h3 {
+      margin: 0 0 12px;
+      color: #023444;
+      font-size: 1.2rem;
+    }
+
+    .quiz-body {
+      max-height: 60vh;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .quiz-question p {
+      margin: 0 0 8px;
+      font-weight: 600;
+      color: #052b33;
+    }
+
+    .quiz-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .quiz-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(4, 29, 37, 0.55);
+      z-index: 999;
+      padding: 20px;
+    }
+
+    .btn-accent {
+      background: var(--accent);
+      color: #022f33;
+      border: 0;
+      border-radius: 8px;
+      padding: 10px 14px;
+      cursor: pointer;
+      font-weight: 700;
+      box-shadow: 0 8px 30px rgba(3,202,228,0.12);
+    }
+    .btn-accent:hover{background: var(--accent-strong)}
+
+    .btn-secondary {
+      background: #eef8fb;
+      color: #083b42;
+      border: 1px solid rgba(3,202,228,0.06);
+      border-radius: 8px;
+      padding: 10px 14px;
+      cursor: pointer;
+      font-weight: 700;
+    }
+    .btn-secondary:hover{background: #cad2d4}
+    .tour-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      z-index: 1200;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+    }
+    .tour-tooltip {
+      position: absolute;
+      max-width: 320px;
+      background: #fff;
+      border-radius: 8px;
+      padding: 12px 14px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+      z-index: 1201;
+      font-size: 14px;
+    }
+    .tour-tooltip .title { font-weight: 700; margin-bottom: 6px; }
+    .tour-tooltip .body { margin-bottom: 10px; }
+    .tour-tooltip .ok {
+      background: #03cae4;
+      border: none;
+      color: white;
+      padding: 6px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .tour-arrow {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      background: #fff;
+      transform: rotate(45deg);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+      z-index: 1200;
+    }
+    .quiz-text{
+      color: #03cae4 !important;
+    }
+    .tour-tooltip { transform: translateZ(0); }
+    .swal-reset-popup {
+      padding: 10px 14px;
+    }
+      @keyframes fadeIn {
+        from {opacity:0;}
+        to {opacity:1;}
+      }
+      @keyframes fadeOut {
+        from {opacity:1;}
+        to {opacity:0;}
+      }
+    /* responsive */
+    @media (max-width:720px){
+      .page{ padding:14px; gap:12px; flex-direction:column; align-items:stretch }
+      .sim-column{ width:100%; position:relative; top:auto; height:auto; order:2 }
+      .article{ order:1 }
+      body{ padding-top:92px }
+    }
+    .custom-dashboard-btn:hover {
+  background-color: #029bb3 !important; /* darker on hover */
+}
+  </style>
+</head>
+<body>
+  <header class="site-header" role="banner">
+    <div class="header-inner">
+        <span class="logo-circle" aria-hidden="true">
+          <img src="netaware-logo.png" alt="NetAware logo">
+        </span>
+        <div>
+          <div class="brand-name">NetAware Fake Antivirus Attack</div>
+          </div>
+        </div>
+  </header>
+<main class="page" role="main">
+
+  <!-- Left column: progress + article -->
+  <div style="flex:1; display:flex; flex-direction:column; gap: 10px;">
+
+    <!-- Progress bar -->
+<div id="simProgressSection" style="display:flex; align-items:flex-start; max-width:500px; width:100%; gap:12px; margin:2px 0;">
+  <div style="flex:1; display:flex; flex-direction:column;">
+    <div id="simProgressText" style="margin:0 0 4px 0; color:#333; font-weight:600;">Progress: 0 / 3</div>
+    <div id="simProgressBarContainer" style="width:100%; background:#eee; border-radius:10px; height:16px; overflow:hidden;">
+      <div id="simProgressBar" style="height:100%; width:0%; background:#03cae4; transition:width 0.3s;"></div>
+    </div>
+  </div>
+  <button id="resetSimBtn" style="padding:6px 12px; border:none; background:#03cae4; color:#000; border-radius:6px; cursor:pointer; height:36px; position:relative; top:15px;"><strong>Reset Simulation</strong></button>
+  <button class="quiz-btn" id="quizBtn" aria-label="Open quiz">?</button>
+</div>
+    <!-- Article -->
+    <article class="article" id="article">
+      <h1>Building a safer digital routine</h1>
+      <div class="meta">
+        <div>By NetAware</div>
+        <div>•</div>
+        <div>15 Sep 2025</div>
+        <div>•</div>
+        <div>1 min read</div>
+      </div>
+
+      <div class="lead">
+        Digital literacy gives more than device skills. It teaches safe habits for searching,
+        evaluating, and sharing information online.
+      </div>
+
+      <div class="content">
+        <p>
+          In daily life people use smartphones for communication, shopping, and banking.
+          That convenience increases risk. This guide lists concrete habits to lower that
+          risk while keeping tasks fast and simple.
+        </p>
+
+        <h3>Practical steps</h3>
+        <ul>
+          <li>Use unique passwords and a password manager.</li>
+          <li>Enable two factor authentication where available.</li>
+          <li>Keep devices and apps updated.</li>
+          <li>Avoid unknown links or downloads.</li>
+          <li>Do not act on random antivirus popups.</li>
+          <li>Back up critical files regularly.</li>
+          <li>Limit what you share on social media.</li>
+          <li>Use a VPN on public Wi Fi.</li>
+        </ul>
+
+        <div class="content-filler">
+          <p><strong>1. Strong passwords:</strong> Use long, unique passphrases rather than single words.</p>
+          <p><strong>2. Two factor:</strong> Use app based codes rather than SMS when possible.</p>
+          <p><strong>3. Updates:</strong> Install OS and app updates to patch vulnerabilities.</p>
+          <p><strong>4. Backups:</strong> Keep a copy of important files in cloud storage or an external drive.</p>
+          <div class="fake-alert-tip">
+            ⚠️ Beware of fake antivirus alerts. Real security tools do not appear as random browser
+            popups. Close the tab. Do not click “Fix” or “Download.”
+          </div>
+        </div>
+      </div>
+    </article>
+
+  </div> <!-- end left column -->
+
+  <!-- Right column: -->
+  <aside class="sim-column" aria-label="Right Panel">
+    <div class="sim">
+      <img src="photos/fakead1.png" alt="Panel 1"> 
+      <div style="font-size: 0.85rem; color: var(--muted);">Congratulations!</div>
+      <h6 style="margin-top: 0px;margin-bottom: 5px; font-size: 12px"><i>Source: Original image on shutterstock. (2022) https://www.shutterstock.com/image-vector/internet-scam-phishing-attempt-fake-cash-2101357843</i></h6>
+    </div>
+
+    <div class="sim">
+      <img src="photos/fakead2.png" alt="Panel 2">
+      <div style="font-size: 0.85rem; color: var(--muted);">Lose weight now!</div>
+      <h6 style="margin-top: 0px;margin-bottom: 5px; font-size: 12px"><i>Source: Truth in Advertising. (2012, January 10). Newsflash: News Sites Endorsing Diet Products May be Fake -. https://truthinadvertising.org/articles/newsflash-fake-news-sites-network-endorsements/</i></h6>
+    </div>
+  </aside>
+  </main>
+
+  <!-- Simulation Modal -->
+  <div class="modal-overlay" id="modalOverlay" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <button class="dismiss" id="closeBtn" aria-label="Close">✕</button>
+      <h2 id="modalTitle">Security alert</h2>
+      <div class="sub" id="modalDesc">A quick scan shows your device may be at risk.</div>
+      <div class="scan" id="scanArea">12 threats detected</div>
+      <div class="note">
+        Note: This is a training simulation. Legitimate antivirus programs do not appear as website popups.
+      </div>
+      <div class="buttons">
+        <button class="btn secondary" id="learnMore">Learn why</button>
+        <button class="btn primary" id="removeBtn">Remove now</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quiz Button -->
+
+
+<!-- QUIZ MODAL -->
+<div class="quiz-overlay" id="quizOverlay" style="display:none;"></div>
+<div class="quiz-modal" id="quizModal">
+  <div class="modal-content quiz-box">
+    <div class="quiz-header">
+      <h3 class="quiz-text">🧠 Quick Quiz: Fake Antivirus</h3>
+    </div>
+
+    <div class="quiz-body">
+      <!-- Questions -->
+   <div class="quiz-question">
+  <b>1. Recall:</b>
+  Fake antivirus pop-ups are designed to create a sense of <b>_____</b> so users click quickly without thinking.<br>
+  <label><input type="radio" name="q1" value="a"> urgency and fear</label><br>
+  <label><input type="radio" name="q1" value="b"> excitement and fun</label><br>
+  <label><input type="radio" name="q1" value="c"> curiosity and trust</label><br>
+  <label><input type="radio" name="q1" value="d"> patience and calmness</label>
+</div>
+
+<hr>
+
+<div class="quiz-question">
+  <b>2. Scenario:</b><br>
+  While browsing a movie streaming website, a pop-up suddenly appears saying, “⚠️ Warning! Your device is infected with 27 viruses. Click here to remove them now!”  
+  You notice the design looks like your real antivirus, but the message came from your browser.  
+  What is the safest thing to do next?<br>
+  <img src="photos/ad_atk277.png" alt="SQL Injection Example" style="width:250px; height:auto;" class="my-2"><br>
+  <h6 style="margin-top: 5px;margin-bottom: 15px; font-size: 12px"><i>Source: OpenAI. (2025). Image generated using ChatGPT based on user prompt.</i></h6>
+  <label><input type="radio" name="q2" value="b"> Click “Fix Now” to remove the viruses</label><br>
+  <label><input type="radio" name="q2" value="a"> Close the browser tab immediately without clicking anything</label><br>
+  <label><input type="radio" name="q2" value="c"> Call the number in the alert for help</label><br>
+  <label><input type="radio" name="q2" value="d"> Share the link with friends to warn them</label>
+</div>
+
+<hr>
+
+<div class="quiz-question">
+  <b>3. Recall:</b><br>
+  Real antivirus warnings appear only inside the <b>_____</b> program you installed, not inside a random website pop-up.<br>
+  
+  <label><input type="radio" name="q3" value="b"> social media</label><br>
+  <label><input type="radio" name="q3" value="c"> email account</label><br>
+  <label><input type="radio" name="q3" value="a"> official antivirus</label><br>
+  <label><input type="radio" name="q3" value="d"> browser tab</label>
+</div>
+
+<hr>
+
+<div class="quiz-question">
+  <b>4. Scenario:</b><br>
+  A pop-up tells you that your antivirus subscription has expired and asks for credit card information to “renew.”  
+  You remember that your real antivirus software didn’t open any notification.  
+  What is the most likely type of scam you are seeing?<br>
+  <img src="photos/ad_atkviruss.png" alt="SQL Injection Example" style="width:250px; height:auto;" class="my-2"><br>
+  <h6 style="margin-top: 5px;margin-bottom: 15px; font-size: 12px"><i>Source: OpenAI. (2025). Image generated using ChatGPT based on user prompt.</i></h6>
+  <label><input type="radio" name="q4" value="b"> Real antivirus update</label><br>
+  <label><input type="radio" name="q4" value="c"> Browser maintenance alert</label><br>
+  <label><input type="radio" name="q4" value="d"> Cookie consent message</label><br>
+  <label><input type="radio" name="q4" value="a"> Fake renewal scam</label>
+</div>
+
+<hr>
+
+<div class="quiz-question">
+  <b>5. Scenario:</b><br>
+  A fake “Microsoft Support” page suddenly takes over your screen saying “Your computer is blocked. Call this number to fix it.”  
+  You can’t close the tab normally.  
+  <br>
+  <img src="photos/ad_atkmicrosoftt.png" alt="SQL Injection Example" style="width:250px; height:auto;" class="my-2"><br>
+  <h6 style="margin-top: 5px;margin-bottom: 15px; font-size: 12px"><i>Source: OpenAI. (2025). Image generated using ChatGPT based on user prompt.</i></h6>
+  <label><input type="radio" name="q5" value="b"> Call the number on the screen to unlock your computer</label><br>
+  <label><input type="radio" name="q5" value="c"> Give them remote access to remove the virus</label><br>
+  <label><input type="radio" name="q5" value="a"> Use Task Manager to force-close the browser, then run a real antivirus scan</label><br>
+  <label><input type="radio" name="q5" value="d"> Pay for the software they recommend</label>
+</div>
+
+<hr>
+
+<div class="quiz-question">
+  <b>6. Recall:</b><br>
+  What do attackers usually gain when users fall for fake antivirus ads?<br>
+  <label><input type="radio" name="q6" value="a"> Money or access to personal information</label><br>
+  <label><input type="radio" name="q6" value="b"> Free antivirus subscriptions</label><br>
+  <label><input type="radio" name="q6" value="c"> More website followers</label><br>
+  <label><input type="radio" name="q6" value="d"> Computer performance improvements</label>
+</div>
+
+<hr>
+
+<div class="quiz-question">
+  <b>7. Scenario:</b><br>
+  You were tricked into clicking a fake “virus removal” ad. It downloaded a file that looked harmless but installed malware in the background.  
+  What initial mistake allowed the attack to happen?<br>
+  
+  <label><input type="radio" name="q7" value="b"> Updating your antivirus too often</label><br>
+  <label><input type="radio" name="q7" value="a"> Trusting a random pop-up instead of verified software sources</label><br>
+  <label><input type="radio" name="q7" value="c"> Ignoring browser updates</label><br>
+  <label><input type="radio" name="q7" value="d"> Using a strong password</label>
+</div>
+
+<hr>
+
+<div class="quiz-question">
+  <b>8. Recall:</b><br>
+  Pop-ups that pretend to run a scan or show virus detections are examples of <b>_____</b> software.<br>
+  <label><input type="radio" name="q8" value="a"> scareware</label><br>
+  <label><input type="radio" name="q8" value="b"> hardware</label><br>
+  <label><input type="radio" name="q8" value="c"> firmware</label><br>
+  <label><input type="radio" name="q8" value="d"> real antivirus</label>
+</div>
+
+<hr>
+
+<div class="quiz-question">
+  <b>9. Recall:</b><br>
+  Which of the following actions can help prevent ad-based attacks?<br>
+  
+  <label><input type="radio" name="q9" value="b"> Ignoring browser updates to save data</label><br>
+  <label><input type="radio" name="q9" value="c"> Clicking every alert to stay informed</label><br>
+  <label><input type="radio" name="q9" value="d"> Turning off your antivirus software</label><br>
+  <label><input type="radio" name="q9" value="a"> Using a pop-up blocker and keeping your browser updated</label>
+</div>
+
+<hr>
+
+<div class="quiz-question">
+  <b>10. Recall:</b><br>
+  If you’re unsure whether an antivirus alert is real, what is the safest step to take?<br>
+  <label><input type="radio" name="q10" value="a"> Open your trusted antivirus software manually and check for alerts</label><br>
+  <label><input type="radio" name="q10" value="b"> Click the alert to see where it leads</label><br>
+  <label><input type="radio" name="q10" value="c"> Restart your device immediately</label><br>
+  <label><input type="radio" name="q10" value="d"> Ignore it and keep browsing risky sites</label>
+</div>
+
+
+    <div class="quiz-footer">
+      <button id="closeQuizBtn" class="btn-secondary">Close</button>
+      <button id="submitQuizBtn" class="btn-accent">Submit Quiz</button>
+    </div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+
+ document.addEventListener("DOMContentLoaded", () => {
+  const DASH_KEY = 'learning_module_state';
+  const moduleKey = 'adattack'; // ✅ make sure this matches your dashboard key
+  const progressData = JSON.parse(localStorage.getItem(DASH_KEY) || "{}");
+
+  // ✅ Check if the module exists in localStorage
+  const module = progressData[moduleKey];
+
+  // ✅ If module data doesn’t exist or lessons are incomplete
+  if (!module || !module.completed || module.completed.length < 3) {
+    Swal.fire({
+      icon: 'warning',
+      title: '⚠️ Access Denied',
+      html: `
+        <p>You need to complete all lessons first before trying the simulation.</p>
+        <p><b>Required:</b> Lesson 1, Lesson 2, and Lesson 3</p>
+      `,
+      confirmButtonText: 'Go Back to Dashboard',
+      customClass: {
+        confirmButton: 'custom-dashboard-btn'
+      }
+    }).then(() => {
+      window.location.href = 'dashboard.html';
+    });
+  }
+});
+    // Modal logic
+    const progressBar = document.getElementById('simProgressBar');
+    const progressText = document.getElementById('simProgressText');
+    const resetSimBtn = document.getElementById('resetSimBtn');
+    const modalOverlay = document.getElementById('modalOverlay');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalDesc = document.getElementById('modalDesc');
+    const scanArea = document.getElementById('scanArea');
+    const closeBtn = document.getElementById('closeBtn');
+    const learnMore = document.getElementById('learnMore');
+    const removeBtn = document.getElementById('removeBtn');
+    const ads = [
+      {
+        title: "Security Alert: Immediate action needed",
+        desc: "A quick scan shows your device may be at risk!",
+        scan: "⚠️ 12 threats detected",
+        learnMoreText:
+          "This fake alert pretends to run a scan, but no real website can scan your computer. It tries to scare you into clicking 'Download' or 'Fix now.' Legit antivirus software only runs from programs you install yourself. If you see this, close the tab, open your real antivirus, and run a scan from there.",
+        removeText:
+          "Never click any button inside a popup like this, including 'Remove' or 'Scan.' These can download malware. Close your browser window instead. If you’re unsure, open your trusted antivirus app manually and check for alerts there."
+      },
+      {
+        title: "Antivirus Expired",
+        desc: "Your subscription ran out. Renew to stay protected.",
+        scan: "⚠️ System vulnerable",
+        learnMoreText:
+          "This type of popup copies the look of real antivirus programs. It tells you your license has expired, but it comes from a website, not your actual antivirus software. Real renewal notices appear only inside your antivirus program or official emails from the vendor. Always verify before entering payment information.",
+        removeText:
+          "Do not click renewal links in popups. If you think your antivirus is expired, open the antivirus program from your desktop and check its subscription status directly. Popups like this are often designed to steal credit card information."
+      },
+      {
+        title: "Critical System Warning",
+        desc: "Unusual activity detected! Call support immediately.",
+        scan: "⚠️ Potential malware found",
+        learnMoreText:
+          "This is a classic tech support scam. It uses fear to make you call a fake support number. The scammers will pretend to fix your device while stealing data or asking for money. Real companies like Microsoft or antivirus vendors never display warnings in your browser or ask you to call them.",
+        removeText:
+          "Do not call any numbers shown in browser popups. Close the tab right away. If your screen freezes, use Task Manager (Ctrl + Shift + Esc) to close the browser safely. Then, run a scan with your trusted antivirus software."
+      }
+    ];
+  let adIndex = 0;
+  let modalShown = false;
+  
+  const PROGRESS_KEY = 'fakeAdsProgress';
+  let adProgress = parseInt(localStorage.getItem(PROGRESS_KEY) || '0', 10);
+  // Sync adIndex with saved progress so the correct ad shows after refresh
+  if (adProgress === 0) {
+    adIndex = 0; // First ad
+  } else if (adProgress === 1) {
+    adIndex = 1; // Second ad
+  } else if (adProgress === 2) {
+    adIndex = 2; // Third ad
+  } else {
+    adIndex = ads.length; // Completed
+  }
+  function updateProgressUI() {
+    progressBar.style.width = (adProgress / 3 * 100) + '%';
+    progressText.textContent = `Progress: ${adProgress} / 3`;
+  }
+
+  const quizBtn = document.querySelector('.quiz-btn');
+  if (adProgress >= 3) {
+    quizBtn.style.display = 'block';
+  } else {
+    quizBtn.style.display = 'none';
+  }
+  updateProgressUI();
+  if (adProgress >= 3) {
+    adIndex = ads.length; // Prevent showing more ads
+    modalOverlay.style.display = 'none';
+  }
+  function showModal() {
+    const ad = ads[adIndex];
+
+    // Hide overlay first to prevent flash
+    modalOverlay.style.display = 'none';
+
+    modalTitle.textContent = ad.title;
+    modalDesc.textContent = ad.desc;
+    scanArea.textContent = ad.scan;
+
+    removeBtn.disabled = true;
+    closeBtn.disabled = true;
+
+    // Small delay to ensure DOM paints new content cleanly
+    requestAnimationFrame(() => {
+      modalOverlay.style.display = 'flex';
+      modalOverlay.setAttribute('aria-hidden', 'false');
+      modalShown = true;
+    });
+  }
+    function closeModal() {
+      // Instantly hide the current modal to avoid flashing
+      modalOverlay.style.opacity = '0';
+      modalOverlay.style.transition = 'opacity 0.2s ease';
+      setTimeout(() => {
+        modalOverlay.style.display = 'none';
+        modalOverlay.setAttribute('aria-hidden', 'true');
+        modalShown = false;
+
+        incrementProgress();
+
+        // Prepare for next ad
+        if (adProgress < 3) {
+          setTimeout(() => {
+            adIndex++;
+            if (adIndex < ads.length) {
+              modalTitle.textContent = '';
+              modalDesc.textContent = '';
+              scanArea.textContent = '';
+              learnMore.disabled = true;
+              removeBtn.disabled = true;
+              closeBtn.disabled = true;
+
+              // Slight fade-in delay before next ad appears
+              setTimeout(() => {
+                modalOverlay.style.opacity = '1';
+                showModal();
+              }, 200); // tooltip will appear shortly after modal
+            }
+          }, 800); // overall delay between ads before showing next modal
+        } else {
+          adIndex++;
+        }
+      }, 200); // hides modal instantly before showing next
+    }
+  closeBtn.addEventListener('click', closeModal);
+
+  learnMore.addEventListener('click', () => {
+    const ad = ads[adIndex];
+    modalDesc.textContent = ad.learnMoreText;
+  });
+
+  removeBtn.addEventListener('click', () => {
+    const ad = ads[adIndex];
+    modalDesc.textContent = ad.removeText;
+  });
+
+  // --- Simulation Progress Management ---
+  const quizModal = document.getElementById('quizModal');
+  const closeQuizBtn = document.getElementById('closeQuizBtn');
+  const quizBtnText = quizBtn.querySelector('span') || quizBtn;
+  const quizOverlay = document.getElementById('quizOverlay');
+
+function incrementProgress() {
+  if (adProgress < 3) {
+    adProgress++;
+    localStorage.setItem(PROGRESS_KEY, adProgress);
+    updateProgressUI();
+  }
+
+  if (adProgress === 3) {
+      const quizBtn = document.querySelector('.quiz-btn');
+      if (quizBtn) quizBtn.style.display = 'block';  // make it visible immediately
+      // Prevent further pop-ups
+      adIndex = ads.length;
+      modalOverlay.style.display = 'none';
+      Swal.fire({
+        title: 'Simulation complete!',
+        text: 'You have closed all pop-ups. Always stay alert to fake antivirus ads.',
+        icon: 'success',
+        showCancelButton: true,
+        confirmButtonText: 'Start Quiz',
+        cancelButtonText: 'Later',
+        confirmButtonColor: '#03cae4'
+      }).then(r => {
+        if (r.isConfirmed) {
+          if (quizBtn) quizBtn.click(); // open quiz modal
+        }
+      });
+  }
+}
+  // call after user clicks X on ad modal
+  updateProgressUI();
+// Quiz Functions
+const QUIZ_PROGRESS_KEY = "fakequiz_progress_v1";
+const QUIZ_LOCK_KEY = "fakequiz_lock_until_v1";
+const QUIZ_ATTEMPTS_KEY = "fakequiz_attempts_v1";
+const passingScore = 8;
+
+function saveQuizProgress() {
+  const answers = {};
+  for (let i = 1; i <= 10; i++) {
+    const sel = document.querySelector(`input[name="q${i}"]:checked`);
+    if (sel) answers["q" + i] = sel.value;
+  }
+  localStorage.setItem(QUIZ_PROGRESS_KEY, JSON.stringify(answers));
+}
+
+function restoreQuizProgress() {
+  const raw = localStorage.getItem(QUIZ_PROGRESS_KEY);
+  if (!raw) return;
+  const answers = JSON.parse(raw);
+  for (const [q, val] of Object.entries(answers)) {
+    const el = document.querySelector(`input[name="${q}"][value="${val}"]`);
+    if (el) el.checked = true;
+  }
+}
+
+function openQuiz() {
+  const lockUntil = parseInt(localStorage.getItem(QUIZ_LOCK_KEY) || 0);
+  const now = Date.now();
+
+  if (now < lockUntil) {
+    const remaining = Math.ceil((lockUntil - now) / 1000);
+    Swal.fire({
+      icon: 'info',
+      title: '⏳ Cooldown Active',
+      text: `Please wait ${remaining} second(s) before retrying.`,
+      confirmButtonText: 'OK'
+    });
+    return;
+  }
+  const scrollBarWidth = window.innerWidth - document.documentElement.clientWidth;
+  document.documentElement.style.setProperty('--scrollbar-comp', scrollBarWidth + 'px');
+  document.body.classList.add('modal-open');
+  quizOverlay.style.display = 'block';
+  quizModal.style.animation = 'none';
+  quizModal.offsetHeight;
+  quizModal.style.animation = 'fadeIn 0.25s ease';
+  quizModal.style.display = 'flex';
+  restoreQuizProgress();
+}
+
+function closeQuiz() {
+  saveQuizProgress();
+  quizModal.style.animation = 'fadeOut 0.25s ease';
+  quizModal.addEventListener('animationend', function handleClose() {
+    quizModal.removeEventListener('animationend', handleClose);
+    quizModal.style.display = 'none';
+    quizOverlay.style.display = 'none';
+    quizModal.style.animation = '';
+    document.body.classList.remove('modal-open');
+    document.documentElement.style.removeProperty('--scrollbar-comp');
+
+    // Toast after closing
+    Swal.fire({
+      toast: true,
+      position: 'top-end',
+      icon: 'info',
+      title: 'Your progress has been saved.',
+      timer: 1800,
+      showConfirmButton: false
+    });
+  });
+}
+
+quizBtn.onclick = openQuiz;
+if (closeQuizBtn) closeQuizBtn.onclick = closeQuiz;
+window.addEventListener('click', e => {
+  if (e.target === quizModal) closeQuiz();
+});
+
+document.getElementById('submitQuizBtn').addEventListener('click', () => {
+  const answers = {q1:"a",q2:"a",q3:"a",q4:"a",q5:"a",q6:"a",q7:"a",q8:"a",q9:"a",q10:"a"};
+  let score = 0;
+  let unanswered = 0;
+
+  for (const q in answers) {
+    const selected = document.querySelector(`input[name="${q}"]:checked`);
+    if (!selected) {
+      unanswered++;
+      continue;
+    }
+    if (selected.value === answers[q]) score++;
+  }
+
+  if (unanswered > 0) {
+    Swal.fire({icon:'info',title:'Incomplete',text:`You still have ${unanswered} unanswered question(s).`});
+    return;
+  }
+
+  if (score >= passingScore) {
+  Swal.fire({
+    icon: 'success',
+    title: '🎉 Quiz Passed!',
+    html: `
+      <p>You scored <b>${score}/10</b> — well done!</p>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-top:10px;">
+        <button id="backDashboardBtn" class="swal2-confirm swal2-styled" style="background:#03cae4;">⬅️ Return to Dashboard</button>
+        <button id="stayHereBtn" class="swal2-styled" style="background:#28a745;color:white;">🏠 Stay on this Page</button>
+      </div>
+    `,
+    showConfirmButton: false,
+    didOpen: () => {
+      const container = Swal.getHtmlContainer();
+      const moduleKey = 'adattack'; // ✅ your module key
+      const DASH_KEY = 'learning_module_state';
+      const raw = localStorage.getItem(DASH_KEY);
+      const dashState = raw ? JSON.parse(raw) : {};
+
+      // ✅ Mark Ad Attack module as completed
+      if (!dashState[moduleKey]) {
+        dashState[moduleKey] = { completed: [], simulationDone: false };
+      }
+      dashState[moduleKey].simulationDone = true;
+      if (!dashState[moduleKey].completed.includes('quiz')) {
+        dashState[moduleKey].completed.push('quiz');
+      }
+      localStorage.setItem(DASH_KEY, JSON.stringify(dashState));
+
+      // ✅ Notify other tabs/dashboards instantly
+      if (window.BroadcastChannel) {
+        const bc = new BroadcastChannel('learning_module_channel');
+        bc.postMessage({ type: 'module_quiz_done', module: moduleKey, progress: 100 });
+        bc.close();
+      }
+
+      // ✅ “Return to Dashboard” button
+      container.querySelector('#backDashboardBtn').addEventListener('click', () => {
+        Swal.fire({
+          title: 'Returning to Dashboard...',
+          icon: 'success',
+          showConfirmButton: false,
+          timer: 1200,
+          timerProgressBar: true,
+          willClose: () => {
+            window.location.href = 'dashboard.html';
+          }
+        });
+      });
+
+      // ✅ “Stay Here” button
+      container.querySelector('#stayHereBtn').addEventListener('click', () => {
+        Swal.close();
+
+        // Broadcast updated full progress (100%)
+        if (window.BroadcastChannel) {
+          const bc = new BroadcastChannel('learning_module_channel');
+          bc.postMessage({ type: 'module_progress_full', module: moduleKey, progress: 100 });
+          bc.close();
+        }
+
+        Swal.fire({
+          toast: true,
+          position: 'top-end',
+          icon: 'success',
+          title: '✅ Quiz completed — module progress updated to 100%',
+          showConfirmButton: false,
+          timer: 2000
+        });
+      });
+    }
+  });
+
+  // ✅ Reset cooldown + clear quiz
+  localStorage.removeItem(QUIZ_ATTEMPTS_KEY);
+  localStorage.removeItem(QUIZ_LOCK_KEY);
+  clearQuizProgress();
+
+} else {
+  // ❌ Failed logic
+  let attempts = parseInt(localStorage.getItem(QUIZ_ATTEMPTS_KEY) || 0) + 1;
+  const cooldownSeconds = attempts * 15;
+  const lockUntil = Date.now() + cooldownSeconds * 1000;
+  localStorage.setItem(QUIZ_ATTEMPTS_KEY, attempts);
+  localStorage.setItem(QUIZ_LOCK_KEY, lockUntil);
+  clearQuizProgress();
+  Swal.fire({
+    icon: 'warning',
+    title: 'Try Again Later',
+    html: `You scored ${score}/10. Wait ${cooldownSeconds} seconds before retrying.`
+  }).then(() => {
+    closeQuiz();
+    startCooldownCountdown(cooldownSeconds);
+  });
+}
+
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+  const lockUntil = parseInt(localStorage.getItem(QUIZ_LOCK_KEY) || 0);
+  const now = Date.now();
+  if (lockUntil > now) {
+    const remaining = Math.ceil((lockUntil - now) / 1000);
+    startCooldownCountdown(remaining);
+  }
+});
+
+function startCooldownCountdown(seconds) {
+  let remaining = seconds;
+
+  quizBtn.style.opacity = '0.6';
+  quizBtn.style.cursor = 'not-allowed';
+
+  const updateText = () => quizBtn.textContent = remaining;
+
+  updateText();
+  const timer = setInterval(() => {
+    remaining--;
+    updateText();
+    if (remaining <= 0) {
+      clearInterval(timer);
+      quizBtn.style.opacity = '1';
+      quizBtn.style.cursor = 'pointer';
+      quizBtn.textContent = '?';
+      localStorage.removeItem(QUIZ_LOCK_KEY);
+      clearQuizProgress();
+      localStorage.removeItem(QUIZ_PROGRESS_KEY);
+      const quizBody = quizModal.querySelector('.quiz-body');
+      if (quizBody) quizBody.scrollTop = 0;
+      Swal.fire({
+        toast: true,
+        position: 'top-end',
+        icon: 'info',
+        title: 'You can take the quiz again.',
+        timer: 1800,
+        showConfirmButton: false
+      });
+    }
+  }, 1000);
+}
+
+function clearQuizProgress() {
+  localStorage.removeItem(QUIZ_PROGRESS_KEY);
+
+  // Clear selected answers in the DOM
+  for (let i = 1; i <= 10; i++) {
+    const checked = document.querySelector(`input[name="q${i}"]:checked`);
+    if (checked) checked.checked = false;
+  }
+}
+// --- Guided Tour ---
+(function(){
+  const TOUR_FLAG = 'ads_tour_completed_v1';
+  let tutorialLock = false;
+  // --- Reset Simulation Logic ---
+  resetSimBtn.addEventListener('click', () => {
+    if (adProgress === 0) return;
+
+    Swal.fire({
+      title: 'Reset simulation?',
+      text: 'You will lose your progress and start over.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes',
+      cancelButtonText: 'No'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        // Remove all related progress and tutorial flags
+        const keysToRemove = [
+          'fakeAdsProgress', // correct key name
+          'ads_tour_completed_v1', // also fix tour flag name
+          'ads_tour_step',
+          'ads_sim_completed',
+          'ads_expected_return',
+          'ads_return_time'
+        ];
+        keysToRemove.forEach(k => localStorage.removeItem(k));
+
+        Swal.fire({
+          toast: true,
+          position: 'top-end',
+          icon: 'success',
+          title: 'Simulation reset',
+          showConfirmButton: false,
+          timer: 1200,
+          timerProgressBar: true,
+          customClass: {
+            popup: 'swal-reset-popup'
+          }
+        });
+
+        setTimeout(() => {
+          // Reload cleanly to start from welcome screen
+          const cleanUrl = window.location.origin + window.location.pathname;
+          window.location.href = cleanUrl;
+        }, 1300);
+      }
+    });
+  });
+function makeOverlay(){
+  const ov = document.createElement('div');
+  ov.className = 'tour-overlay';
+  ov.style.display = 'none';
+  ov.id = 'tourOverlay';
+  ov.style.zIndex = 9999; // above modal
+  ov.innerHTML = `
+    <div class="tour-tooltip" id="tourTooltip" 
+         role="dialog" aria-modal="true"></div>
+    <div class="tour-arrow" id="tourArrow"></div>`;
+  document.body.appendChild(ov);
+  return ov;
+}
+  const overlay = document.getElementById('tourOverlay') || makeOverlay();
+  const tooltip = () => document.getElementById('tourTooltip');
+  const arrowEl = () => document.getElementById('tourArrow');
+
+  // dynamically position tooltip to target
+  let _tourRafId = null
+  let _tourActiveEl = null
+
+  function positionTooltip(targetRect, side = 'right', margin = 12) {
+    const tip = tooltip()
+    const arrow = arrowEl()
+    if (!tip || !arrow || !targetRect) return
+
+    const vw = document.documentElement.clientWidth
+    const vh = document.documentElement.clientHeight
+
+    // compute using current rect
+    let left = targetRect.right + margin
+    let top = targetRect.top + (targetRect.height / 2) - (tip.offsetHeight / 2)
+
+    if (side === 'left') {
+      left = targetRect.left - margin - tip.offsetWidth
+    } else if (side === 'top') {
+      left = targetRect.left + (targetRect.width / 2) - (tip.offsetWidth / 2)
+      top = targetRect.top - margin - tip.offsetHeight
+    } else if (side === 'bottom') {
+      left = targetRect.left + (targetRect.width / 2) - (tip.offsetWidth / 2)
+      top = targetRect.bottom + margin
+    }
+
+    // clamp
+    left = Math.min(Math.max(8, left), vw - tip.offsetWidth - 8)
+    top = Math.min(Math.max(8, top), vh - tip.offsetHeight - 8)
+
+    tip.style.left = Math.round(left) + 'px'
+    tip.style.top = Math.round(top) + 'px'
+
+    const arrowSize = 12
+    arrow.style.left = Math.round(Math.min(Math.max(targetRect.left + targetRect.width / 2 - (arrowSize / 2), 8), vw - arrowSize - 8)) + 'px'
+    arrow.style.top = Math.round(Math.min(Math.max(targetRect.top + targetRect.height / 2 - (arrowSize / 2), 8), vh - arrowSize - 8)) + 'px'
+  }
+
+  function _tourTick(side) {
+    if (!_tourActiveEl) return
+    const rect = _tourActiveEl.getBoundingClientRect()
+    positionTooltip(rect, side)
+    _tourRafId = requestAnimationFrame(() => _tourTick(side))
+  }
+
+  function showTooltipFor(selector, title, text, side = 'right') {
+    return new Promise((resolve) => {
+      const el = document.querySelector(selector)
+      if (!el) {
+        resolve()
+        return
+      }
+
+      // clear any previous tracking
+      if (_tourRafId) {
+        cancelAnimationFrame(_tourRafId)
+        _tourRafId = null
+      }
+      _tourActiveEl = el
+
+      // reveal overlay and tooltip
+      overlay.style.display = 'block'
+      overlay.scrollTop = 0
+      const tip = tooltip()
+      tip.dataset.side = side
+      tip.innerHTML = `<div class="title">${title}</div><div class="body">${text}</div><div style="text-align:right"><button class="ok" id="tourOkBtn">OK</button></div>`
+      tip.style.left = '0'
+      tip.style.top = '0'
+      tip.style.display = 'block'
+
+      // start continuous positioning loop
+      _tourRafId = requestAnimationFrame(() => _tourTick(side))
+
+      // also respond to window resize and scroll immediately
+      function _onWinChange() {
+        if (!_tourActiveEl) return
+        const newRect = _tourActiveEl.getBoundingClientRect()
+        positionTooltip(newRect, side)
+      }
+      window.addEventListener('resize', _onWinChange)
+      window.addEventListener('scroll', _onWinChange, true)
+
+      // OK handler stops loop and cleans up
+      const ok = document.getElementById('tourOkBtn')
+      ok.focus()
+      ok.onclick = () => {
+        overlay.style.display = 'none'
+        if (_tourRafId) {
+          cancelAnimationFrame(_tourRafId)
+          _tourRafId = null
+        }
+        _tourActiveEl = null
+        window.removeEventListener('resize', _onWinChange)
+        window.removeEventListener('scroll', _onWinChange, true)
+        resolve()
+      }
+    })
+  }
+    // --- Guide ad function (global) ---
+    async function guideAd(index) {
+      adIndex = index;
+      await new Promise(resolve => setTimeout(resolve, 1400));
+
+      showModal(index);
+
+      // Wait until modal is fully visible
+      await new Promise(resolve => {
+        const check = setInterval(() => {
+          const style = window.getComputedStyle(modalOverlay);
+          if (style.display === 'flex' && style.opacity === '1') {
+            clearInterval(check);
+            resolve();
+          }
+        }, 100);
+      });
+
+      // Extra wait to ensure modal content is rendered
+      await new Promise(resolve => setTimeout(resolve, 600));
+
+      learnMore.disabled = true;
+      removeBtn.disabled = true;
+      closeBtn.disabled = true;
+
+      const briefTips = [
+        "This fake scan claims your system has threats. Ask yourself, can a random website really access your computer’s files? Only installed security software can do that.",
+        "This alert copies a real antivirus renewal notice. Think, when does your antivirus usually warn you? Inside the app itself, not through a browser pop-up.",
+        "This fake tech support message shows a phone number. Ask, would real companies ever show a number in a browser warning? They wouldn’t. They contact you through official support channels only."
+      ];
+
+      await showTooltipFor('#modalOverlay', 'Suspicious Popup', briefTips[index], 'bottom');
+
+      await showTooltipFor('#learnMore', 'Learn More', 'Click this to inspect the message more closely. Look for spelling errors, fake urgency, or claims that seem impossible.', 'top');
+      learnMore.disabled = false;
+      await new Promise(resolve => learnMore.addEventListener('click', resolve, { once: true }));
+
+      await showTooltipFor('#modalDesc', 'Message Shown', 'Scammers rely on fear. Ask, is there real proof of a threat, or is it just trying to make you panic?', 'right');
+      await new Promise(resolve => setTimeout(resolve, 800));
+
+      await showTooltipFor('#removeBtn', 'Fake Action Button', 'Think before clicking. Why would a website have the power to “remove” viruses? Clicking can download malware or open unsafe links. For this exercise, click to continue.', 'bottom');
+      removeBtn.disabled = false;
+      await new Promise(resolve => removeBtn.addEventListener('click', resolve, { once: true }));
+
+      await showTooltipFor('#modalDesc', 'Explanation', 'The safe choice is always to close or ignore such popups. Interaction is what scammers want.', 'right');
+
+      closeBtn.disabled = false;
+      await showTooltipFor('#closeBtn', 'Close Safely', 'Click close to finish. In real cases, closing or exiting the tab protects you from the scam.', 'top');
+      await new Promise(resolve => closeBtn.addEventListener('click', resolve, { once: true }));
+
+      // Fade out modal before next ad
+      modalOverlay.style.opacity = '0';
+      await new Promise(resolve => setTimeout(resolve, 200));
+      modalOverlay.style.display = 'none';
+      modalOverlay.style.opacity = '1';
+      await new Promise(resolve => setTimeout(resolve, 200));
+    }
+
+    // --- Guided Tour ---
+    async function startAdsTour() {
+      if (localStorage.getItem(TOUR_FLAG)) return;
+
+      await Swal.fire({
+        title: 'Welcome',
+        text: 'Welcome to the Fake Antivirus Attack simulation. Here you will learn how to identify malicious pop-up ads.',
+        icon: 'info',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#03cae4'
+      });
+
+      await Swal.fire({
+        title: 'Scenario',
+        text: 'You came across a website plagued with fake ads that try to scare you into installing malware on your device.',
+        icon: 'question',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#03cae4'
+      });
+
+      await guideAd(0);
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      await guideAd(1);
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      await guideAd(2);
+
+      localStorage.setItem(TOUR_FLAG, '1');
+    }
+    // --- Restore State on Reload ---
+    window.addEventListener('load', () => {
+      updateProgressUI();
+      const quizBtn = document.querySelector('.quiz-btn');
+
+      // Sync adIndex with adProgress
+      adIndex = adProgress;
+
+      if (adProgress === 0) {
+        startAdsTour(); // full tour for new users
+      } else if (adProgress === 1) {
+        setTimeout(async () => {
+          await guideAd(1);
+          await new Promise(r => setTimeout(r, 1000)); // allow clean state reset
+          if (adProgress === 2 && !localStorage.getItem('ads_tour_completed_v1')) {
+            await guideAd(2);
+          }
+        }, 600);
+      } else if (adProgress === 2) {
+        guideAd(2); // replay tooltip for third ad
+      } else if (adProgress < ads.length) {
+        showModal(); // resume mid-simulation
+      } else {
+        // Completed simulation
+        modalOverlay.style.display = 'none';
+        quizBtn.style.display = 'block';
+      }
+    });
+})();
+/* mimic ad pop-open then auto-close */
+document.querySelectorAll('.sim').forEach(sim => {
+  sim.style.cursor = 'pointer';
+  sim.addEventListener('click', e => {
+    e.preventDefault();
+
+    // open a new tab triggered by user click
+    const w = window.open('', '_blank', 'width=600,height=400');
+
+    if (!w) {
+      // fallback visual effect if popup blocked
+      sim.style.transform = 'scale(0.98)';
+      setTimeout(() => sim.style.transform = '', 160);
+      return;
+    }
+
+    // write content and immediately schedule auto-close
+    const doc = w.document;
+    doc.open();
+    doc.write(`<!doctype html><html><head>
+      <meta charset="utf-8">
+      <title>Advertisement</title>
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      <style>body{display:flex;align-items:center;justify-content:center;height:100vh;margin:0;font-family:Arial,sans-serif}</style>
+      </head><body>
+      <script>
+        setTimeout(() => {
+          window.location.replace('https://shopee.com');
+        }, 500);
+      <\/script>
+      </body></html>`);
+    doc.close();
+  });
+});
+
+</script>
+</body>
+</html>

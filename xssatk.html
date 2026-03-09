@@ -1,0 +1,1797 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/png" href="photos/headerlogo.png">
+  <title>NetAware — XSS Simulation</title>
+<style>
+    :root {
+      --deep-navy: #1c2430;
+      --teal: #00c7d4;
+      --accent:#03cae4;
+      --soft-cyan: #e9fbff;
+      --pale: #f6fbfc;
+      --muted: #375a6a;
+      --card: #ffffff;
+      --accent-2: #90d5ff;
+      --danger: #dc3545;
+      --success: #28a745;
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+    .custom-dashboard-btn {
+  background-color: #03cae4 !important; /* teal accent color */
+  color: white !important;
+  border: none !important;
+  border-radius: 8px !important;
+  padding: 8px 16px !important;
+  font-weight: 600 !important;
+  transition: background 0.3s;
+}
+
+.custom-dashboard-btn:hover {
+  background-color: #029bb3 !important; /* darker on hover */
+}
+
+
+    body {
+      margin: 0;
+      background: var(--pale);
+      color: var(--muted);
+      display: flex;
+      justify-content: center;
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+    }
+
+    .container {
+      width: 600px;
+      min-height: 100vh;
+      background: var(--card);
+      border-left: 1px solid #dadce0;
+      border-right: 1px solid #dadce0;
+      box-shadow: 0 0 20px rgba(0,0,0,0.05);
+    }
+
+    /* Top Header / Banner */
+    .top-nav {
+      background: var(--deep-navy);
+      border-bottom: 4px solid var(--teal);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 20px;
+      color: #fff;
+      font-size: 14px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .top-nav .title strong {
+      font-size: 16px;
+      color: #fff;
+    }
+    .top-nav .title span {
+      font-size: 12px;
+      color: var(--accent-2);
+    }
+    .icon { cursor:pointer; font-size:18px; color:var(--teal); }
+
+    /* Profile banner */
+    header {
+      position: relative;
+      width: 100%;
+      height: 200px;
+      background: linear-gradient(90deg, var(--deep-navy), var(--teal));
+      border-bottom: 2px solid var(--teal);
+    }
+    .profile-pic {
+      position: absolute;
+      bottom: -50px;
+      left: 20px;
+      border-radius: 50%;
+      border: 4px solid var(--card);
+      width: 100px;
+      height: 100px;
+      background: #ccc;
+      background-size: cover;
+    }
+    .edit-btn {
+      position: absolute;
+      bottom: -30px;
+      right: 20px;
+      background: var(--teal);
+      color: #fff;
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-size: 14px;
+      cursor: pointer;
+      font-weight: bold;
+      border: none;
+      transition: background 0.2s;
+    }
+    .edit-btn:hover {
+      background: #03b5c5;
+    }
+
+    /* Profile Info */
+    .profile-info {
+      padding: 60px 20px 20px;
+    }
+    .profile-info h2 {
+      margin: 0;
+      font-size: 22px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--deep-navy);
+    }
+    .verified {
+      background: var(--teal);
+      color: #fff;
+      padding: 2px 6px;
+      border-radius: 5px;
+      font-size: 12px;
+    }
+    .username {
+      color: #5f6368;
+      font-size: 14px;
+      margin-top: 2px;
+    }
+    .bio {
+      margin-top: 10px;
+      font-size: 14px;
+    }
+    .meta {
+      margin-top: 5px;
+      font-size: 12px;
+      color: #6b7a8a;
+    }
+
+    nav {
+      display: flex;
+      border-bottom: 1px solid #dadce0;
+      margin-top: 15px;
+    }
+    nav div {
+      flex: 1;
+      text-align: center;
+      padding: 12px 0;
+      cursor: pointer;
+      font-weight: 500;
+      color: var(--muted);
+    }
+    nav div.active {
+      border-bottom: 3px solid var(--teal);
+      color: var(--deep-navy);
+      font-weight: 700;
+    }
+
+    /* Posts */
+    .post {
+      padding: 15px;
+      border-bottom: 1px solid #eee;
+      font-size: 14px;
+    }
+    .post strong { font-size: 15px; color: var(--deep-navy); }
+    .post .meta { font-size: 12px; color: #6b7a8a; }
+    .post img {
+      border-radius: 10px;
+      width: 100%;
+      margin-top: 10px;
+      border: 1px solid #dadce0;
+    }
+    .quiz-btn {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+    .quiz-btn:hover { background:#02b4ca; }
+    .btn-accent {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 8px 18px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .btn-accent:hover{
+      background:#02b4ca;
+    }
+
+    /* modal overlay for this quiz */
+    .xss-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      justify-content: center;
+      align-items: center;
+      z-index: 400;
+      animation: xssFadeIn 0.2s ease;
+    }
+
+    /* modal content separate from your XSS edit modal */
+    .xss-modal-content {
+      background: #fff;
+      width: 100%;
+      max-width: 760px;
+      border-radius: 10px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      animation: xssPopIn 0.25s ease;
+    }
+    .quiz-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 20px;
+    }
+    /* inner scrolling area */
+    .xss-modal .quiz-body {
+      padding: 18px;
+      max-height: 60vh;
+      overflow-y: auto;
+    }
+
+    /* footer */
+    .xss-modal .quiz-footer {
+      display:flex;
+      justify-content:flex-end;
+      gap:10px;
+      padding: 14px 20px;
+      border-top: 1px solid #ddd;
+      background:#fafafa;
+    }
+
+    /* keyframes */
+    @keyframes xssFadeIn { from { opacity: 0 } to { opacity: 1 } }
+    @keyframes xssFadeOut { from { opacity: 1 } to { opacity: 0 } }
+    @keyframes xssPopIn { from { transform: scale(.98); opacity: 0 } to { transform: scale(1); opacity: 1 } }
+    @keyframes xssPopOut { from { transform: scale(1); opacity: 1 } to { transform: scale(.98); opacity: 0 } }
+
+    /* page lock helper */
+    body.xss-modal-open { overflow: hidden; padding-right: var(--scrollbar-comp); }
+
+    /* small disabled state for button during lock */
+    .quiz-btn.locked { opacity: .6; cursor: not-allowed; }
+    .btn-secondary {
+      background: #ccc;
+      border: none;
+      padding: 8px 18px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .btn-secondary:hover { background: #aaa; }
+    /* Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.6);
+      justify-content: center;
+      align-items: center;
+      z-index: 999;
+    }
+    .modal-content {
+      background: var(--card);
+      color: var(--deep-navy);
+      padding: 20px;
+      border-radius: 10px;
+      width: 320px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    }
+    .modal-content h3 { margin: 0 0 10px; }
+    .modal-content textarea {
+      width: 100%;
+      height: 80px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      padding: 8px;
+      font-family: inherit;
+      resize: none;
+    }
+    .modal-content button {
+      margin-top: 10px;
+      padding: 6px 12px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .save-btn {
+      background: var(--teal);
+      color: #fff;
+    }
+    .save-btn:hover {
+      background: #03b5c5;
+    }
+    .cancel-btn {
+      background: #ccc;
+      color: #333;
+      margin-left: 5px;
+    }
+
+    /* Simulation Notes */
+    .instructions {
+      background: #f8fafc;
+      border: 1px solid #d8e8f0;
+      color: var(--muted);
+      margin: 15px;
+      padding: 12px;
+      border-radius: 8px;
+    }
+    .instructions h4 {
+      margin: 0 0 8px 0;
+      color: var(--deep-navy);
+    }
+    .steps {
+      font-size: 14px;
+      color: var(--muted);
+      margin: 8px 0;
+    }
+
+    .progress-wrap {
+      background: #eaf6f9;
+      border: 1px solid #d6edf2;
+      padding: 8px;
+      border-radius: 8px;
+      margin-top: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .progress {
+      height: 12px;
+      background: #fff;
+      border-radius: 999px;
+      width: 100%;
+      overflow: hidden;
+      border: 1px solid #d3e6ec;
+    }
+    .progress > b {
+      display: block;
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--teal), var(--accent-2));
+      transition: width .35s;
+    }
+    .progress-label {
+      min-width: 48px;
+      text-align: right;
+      font-size: 13px;
+      color: var(--deep-navy);
+    }
+
+    /* Links */
+    .dom-links a {
+      display: inline-block;
+      margin-right: 10px;
+      margin-top: 8px;
+      color: var(--teal);
+      text-decoration: underline;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div id="reflectedXSSPage" style="display:none"></div>
+  
+  <div class="container">
+    <!-- Top Navigation -->
+    <div class="top-nav">
+      <span class="icon">🌐</span>
+      <div class="title">
+        <strong>NetAware — XSS Simulation</strong>
+        <span>Live Reflected Demo</span>
+      </div>
+      <span class="icon">⚙</span>
+    </div>
+    <!-- Header -->
+    <header>
+      <div class="profile-pic" id="pfp" data-faketoken=""></div>
+      <div class="edit-btn" onclick="openModal()">Edit bio</div>
+    </header>
+
+    <!-- Profile Info -->
+    <div class="profile-info">
+      <h2>User <span class="verified">✔ Get verified</span></h2>
+      <div class="username">@User</div>
+
+      <!-- NEW: step-by-step instruction & progress -->
+      <div class="instructions" id="instructionsPanel" aria-live="polite">
+        <h4>How to try the three XSS attacks (safe, simulated)</h4>
+        <div class="steps">
+          1. <strong>Stored XSS</strong> — Click <em>Claim free followers</em> in the post to save a malicious bio. Then open the viewer tab to execute it.<br>
+          2. <strong>Reflected XSS</strong> — In the <em>Reflected XSS Simulation</em> box below, submit any text (e.g. <code>&lt;script&gt;alert(1)&lt;/script&gt;</code>) to see it reflected unsafely.<br>
+          3. <strong>DOM XSS</strong> — Click one of the DOM test links below to open a new tab with a message parameter (the new tab will render that message unsafely).
+        </div>
+
+        <div class="progress-wrap" aria-hidden="false" style="margin-top:8px">
+          <div style="font-weight:700;color:#375a6a">Progress:</div>
+          <div class="progress" style="flex:1">
+            <b id="attackProgressBar" style="width:0%"></b>
+          </div>
+          <div class="progress-label" id="attackProgressLabel">0/3</div>
+        </div>
+      </div>
+      <!-- VULNERABLE BIO (will render innerHTML) -->
+      <div class="bio" id="bio-vulnerable" aria-label="vulnerable-bio"></div>
+      <!-- SAFE BIO (textContent) - hidden by default but available for comparison -->
+      <div class="bio" id="bio-safe" style="display:none; background:#071018; padding:8px; border-radius:6px; margin-top:8px; color:#cfe7ff"></div>
+      <div class="meta">📅 Joined December 2025</div>
+      <div class="stats">100 Following · 50 Followers</div>
+
+      <div class="controls">
+        <button class="toggle" id="toggleSafe" onclick="toggleSafeMode()">Show safe view</button>
+        <button class="toggle" id="openViewer" onclick="openViewerTabWithMessagePrompt()">Open viewer (new tab)</button>
+        <button class="toggle" id="resetDemoBtn" onclick="resetDemo()">Reset simulation</button>
+      </div>
+      <div class="notice">Tip: this demo intentionally shows a <strong>vulnerable</strong> rendering using <code>innerHTML</code>. Use the safe view to compare.</div>
+
+      <!-- (Suggested action removed) -->
+    </div>
+    <!-- Tabs -->
+    <nav>
+      <div class="active">Posts</div>
+      <div>Replies</div>
+      <div>Highlights</div>
+      <div>Articles</div>
+      <div>Media</div>
+      <div>Likes</div>
+    </nav>
+
+    <!-- Post (contains the lure) -->
+    <div class="post">
+      <div style="color:gray; font-size:12px;">You reposted</div>
+      <strong>User 2</strong> <span class="meta">@User2 · 5h</span><br>
+      Free followers hack — <span class="tooltip" onclick="injectFollowerScam()">Click to try</span>
+      <div>
+        <img src="post-image.jpg" alt="Post images">
+      </div>
+    </div>
+
+    <!-- Attacker panel (simulated) -->
+    <div class="attacker-panel" id="attackerPanel">
+      <strong>Attacker received:</strong>
+      <pre id="stolenOutput">(no data)</pre>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal" id="editModal" role="dialog" aria-modal="true">
+    <div class="modal-content">
+      <h3>Edit Bio</h3>
+      <textarea id="bioInput">Bio</textarea>
+      <br>
+      <button class="save-btn" onclick="saveBio()">Save</button>
+      <button class="cancel-btn" onclick="closeModal()">Cancel</button>
+      <p class="notice" style="margin-top:8px;">You may enter HTML or JavaScript here for testing. <strong>Only use this in a safe, local environment.</strong></p>
+    </div>
+  </div>
+  <!-- QUIZ: Floating button (HTML placed, not created by JS) -->
+<button id="quizBtnXSS" class="quiz-btn" title="Open quiz">?</button>
+<!-- QUIZ MODAL -->
+<div class="xss-modal" id="xssQuizModal" aria-hidden="true">
+  <div class="xss-modal-content quiz-box">
+    <div class="quiz-header">
+      <h3 class="modal-title">🧠 Quick Quiz: XSS Awareness Quiz</h3>
+    </div>
+    <div class="quiz-body" id="xssQuizBody">
+      <hr>
+      <div class="quiz-question" data-q="1">
+        <p><b>1. Scenario</b> You typed your name in a feedback form. The next day, another visitor saw an alert showing your input. What type of XSS happened?</p>
+        <label><input type="radio" name="q1" value="a"> DOM XSS, the script ran inside the browser only</label><br>
+        <label><input type="radio" name="q1" value="b"> Reflected XSS, the input ran only during your own session</label><br>
+        <label><input type="radio" name="q1" value="c"> Input spoofing, the message appeared because of caching</label><br>
+        <label><input type="radio" name="q1" value="d"> Stored XSS, the input stayed on the site and ran later</label>
+      </div>
+      <hr>
+      <div class="quiz-question" data-q="2">
+        <p><b>2. Scenario</b> You searched for a term and the results page showed a pop-up containing your search text. Which XSS type fits this?</p>
+        <label><input type="radio" name="q2" value="a"> DOM XSS, injected through a client-side script</label><br>
+        <label><input type="radio" name="q2" value="b"> Stored XSS, data saved for repeated use</label><br>
+        <label><input type="radio" name="q2" value="c"> Reflected XSS, unsafe data echoed back in the response</label><br>
+        <label><input type="radio" name="q2" value="d"> Session misuse, caused by expired cookies</label>
+      </div>
+      <hr>
+      <div class="quiz-question" data-q="3">
+        <p><b>3. Scenario</b> The site uses JavaScript to update parts of the page. A hacker changed the URL to inject a fake login prompt. Identify the XSS type.</p>
+        <img src="photos/question3.png" style="max-width:100%;border:1px solid #ccc;border-radius:6px;margin:8px 0;">
+        <h6 style="margin-top: 2px;margin-bottom: 15px; font-size: 12px"><i>Source: Image taken by Gaibriell Josue, 2025.</i></h6>
+        <label><input type="radio" name="q3" value="a"> DOM XSS</label><br>
+        <label><input type="radio" name="q3" value="b"> Stored XSS</label><br>
+        <label><input type="radio" name="q3" value="c"> Reflected XSS</label><br>
+        <label><input type="radio" name="q3" value="d"> Header injection</label>
+      </div>
+      <hr>
+      <div class="quiz-question" data-q="4">
+        <p><b>4. Recall</b> Why is it unsafe when a site outputs data from users without checking or cleaning it?</p>
+        <label><input type="radio" name="q4" value="a"> It might show harmful code to visitors</label><br>
+        <label><input type="radio" name="q4" value="b"> It can slow down database queries</label><br>
+        <label><input type="radio" name="q4" value="c"> It can remove formatting from text</label><br>
+        <label><input type="radio" name="q4" value="d"> It affects browser themes</label>
+      </div>
+      <hr>
+      <div class="quiz-question" data-q="5">
+        <p><b>5. Scenario</b> A hacker leaves a malicious comment that loads silently and collects login data from visitors. What category fits this?</p>
+        <img src="photos/question5.png" style="max-width:100%;border:1px solid #ccc;border-radius:6px;margin:8px 0;">
+        <h6 style="margin-top: 2px;margin-bottom: 15px; font-size: 12px"><i>Source: Image taken by Gaibriell Josue, 2025.</i></h6>
+        <label><input type="radio" name="q5" value="a"> Reflected XSS</label><br>
+        <label><input type="radio" name="q5" value="b"> Stored XSS</label><br>
+        <label><input type="radio" name="q5" value="c"> DOM XSS</label><br>
+        <label><input type="radio" name="q5" value="d"> Broken session handling</label>
+      </div>
+      <hr>
+      <div class="quiz-question" data-q="6">
+        <p><b>6. Recall</b> Reflected XSS happens most often when user input appears instantly on a page’s _____.</p>
+        <label><input type="radio" name="q6" value="a"> stored comment section</label><br>
+        <label><input type="radio" name="q6" value="b"> partial script updates</label><br>
+        <label><input type="radio" name="q6" value="c"> image alt text</label><br>
+        <label><input type="radio" name="q6" value="d"> search results</label>
+      </div>
+      <hr>
+
+      <div class="quiz-question" data-q="7">
+        <p><b>7. Recall</b> DOM XSS mainly happens because:</p>
+        <label><input type="radio" name="q7" value="a"> The site forgets to store the user input</label><br>
+        <label><input type="radio" name="q7" value="b"> The browser caches too much content</label><br>
+        <label><input type="radio" name="q7" value="c"> The website uses local JavaScript that trusts user data too much</label><br>
+        <label><input type="radio" name="q7" value="d"> The server removed a validation rule</label>
+      </div>
+      <hr>
+
+      <div class="quiz-question" data-q="8">
+        <p><b>8. Recall</b> What should a secure website do before showing user input on a page?</p>
+        <label><input type="radio" name="q8" value="a"> Display everything exactly as written</label><br>
+        <label><input type="radio" name="q8" value="b"> Encode the data to prevent scripts from running</label><br>
+        <label><input type="radio" name="q8" value="c"> Store the data for later scripts</label><br>
+        <label><input type="radio" name="q8" value="d"> Reduce the content length</label>
+      </div>
+      <hr>
+
+      <div class="quiz-question" data-q="9">
+        <p><b>9. Scenario</b> You typed harmless text into a site and later saw it behave like code. What does this suggest?</p>
+        <label><input type="radio" name="q9" value="a"> The site has an XSS issue</label><br>
+        <label><input type="radio" name="q9" value="b"> The browser used a plug-in</label><br>
+        <label><input type="radio" name="q9" value="c"> The page refreshed incorrectly</label><br>
+        <label><input type="radio" name="q9" value="d"> The device stored old input</label>
+      </div>
+      <hr>
+
+      <div class="quiz-question" data-q="10">
+        <p><b>10. Recall</b> Which habit helps reduce XSS risks while browsing?</p>
+        <label><input type="radio" name="q10" value="a"> Disable browser security features</label><br>
+        <label><input type="radio" name="q10" value="b"> Avoid entering data on untrusted sites</label><br>
+        <label><input type="radio" name="q10" value="c"> Click all links to verify them</label><br>
+        <label><input type="radio" name="q10" value="d"> Keep multiple tabs from the same site open</label>
+      </div>
+      <hr>
+    </div>
+    <div class="quiz-footer">
+      <button id="closeQuizBtn" class="btn-secondary">Close</button>
+      <button id="submitQuizBtn" class="btn-accent">Submit Quiz</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+  const DASH_KEY = 'learning_module_state';
+  const moduleKey = 'xss'; // ✅ make sure this matches your dashboard key
+  const progressData = JSON.parse(localStorage.getItem(DASH_KEY) || "{}");
+
+  // ✅ Check if the module exists in localStorage
+  const module = progressData[moduleKey];
+
+  // ✅ If module data doesn’t exist or lessons are incomplete
+  if (!module || !module.completed || module.completed.length < 3) {
+    Swal.fire({
+      icon: 'warning',
+      title: '⚠️ Access Denied',
+      html: `
+        <p>You need to complete all lessons first before trying the simulation.</p>
+        <p><b>Required:</b> Lesson 1, Lesson 2, and Lesson 3</p>
+      `,
+      confirmButtonText: 'Go Back to Dashboard',
+      customClass: {
+        confirmButton: 'custom-dashboard-btn'
+      }
+    }).then(() => {
+      window.location.href = 'dashboard.html';
+    });
+  }
+});
+  // STORAGE KEYS + DOM REFS
+  const BIO_KEY = 'twitter_demo_bio';
+  const TOKEN_KEY = 'twitter_demo_token';
+  const PROGRESS_KEY = 'xss_progress';
+  const bioVuln = document.getElementById('bio-vulnerable');
+  const bioSafe = document.getElementById('bio-safe');
+  const bioInput = document.getElementById('bioInput');
+  const modal = document.getElementById('editModal');
+  const attackerPanel = document.getElementById('attackerPanel');
+  const stolenOutput = document.getElementById('stolenOutput');
+  const pfp = document.getElementById('pfp');
+  const progressBar = document.getElementById('attackProgressBar');
+  const progressLabel = document.getElementById('attackProgressLabel');
+  const quizBtn = document.getElementById('quizBtnXSS');
+  if (quizBtn) quizBtn.style.display = 'none';
+  
+  // Track attacks done (stored / reflected / dom) - persistent
+  const attacksDone = new Set(JSON.parse(localStorage.getItem(PROGRESS_KEY) || '[]'));
+
+  // ---- helper: update progress UI and persist, show SweetAlert ----
+
+function updateAttackProgress() {
+  const count = attacksDone.size;
+  const pct = Math.round((count / 3) * 100);
+  progressBar.style.width = pct + '%';
+  progressLabel.textContent = `${count}/3`;
+  localStorage.setItem(PROGRESS_KEY, JSON.stringify([...attacksDone]));
+
+  if (count > 0 && count < 3) {
+    Swal.fire({
+      toast: true,
+      position: 'top-end',
+      title: `Progress updated: ${count}/3`,
+      showConfirmButton: false,
+      timer: 1200,
+      background: "#111",
+      color: "#fff"
+    });
+  }
+if (quizBtn) quizBtn.style.display = count === 3 ? 'inline-block' : 'none';
+
+  if (count === 3) {
+    setTimeout(() => {
+      Swal.fire({
+        title: "🎉 Simulation Complete!",
+        html: `You’ve explored all three types of XSS in depth!<br>
+              Ready to take the quiz?<br><br>
+              <small style="color:#ccc;">
+                Remember: Always sanitize user input and never trust data from untrusted sources.
+              </small>`,
+        icon: "success",
+        showCancelButton: true,
+        confirmButtonText: "Start Quiz",
+        cancelButtonText: "Later",
+        background: "#111",
+        color: "#fff",
+        allowOutsideClick: false
+      }).then(res => {
+        if (res.isConfirmed) {
+          openQuiz();
+        }
+      });
+    }, 250);
+  }
+}
+
+  // Mark attack and update
+  function markAttack(name) {
+    if (!attacksDone.has(name)) {
+      attacksDone.add(name);
+      updateAttackProgress();
+    }
+  }
+
+  // Fake token
+  if (!localStorage.getItem(TOKEN_KEY)) {
+    localStorage.setItem(TOKEN_KEY, 'FAKE_AUTH_TOKEN_12345');
+  }
+  pfp.dataset.faketoken = localStorage.getItem(TOKEN_KEY);
+
+  // ---------------------------
+  // Bio Handling
+  // ---------------------------
+  function loadAndRender() {
+    const stored = localStorage.getItem(BIO_KEY) || 'Hello';
+    bioVuln.innerHTML = stored;
+    bioSafe.textContent = stored;
+  }
+
+  function openModal() {
+    bioInput.value = localStorage.getItem(BIO_KEY) || 'Bio';
+    modal.style.display = 'flex';
+  }
+  function closeModal() { modal.style.display = 'none'; }
+
+  function saveBio() {
+    const v = bioInput.value;
+    localStorage.setItem(BIO_KEY, v);
+    loadAndRender();
+    closeModal();
+    Swal.fire({ title:"💾 Bio saved", text:"Saved to localStorage.", icon:"success", timer:1200, showConfirmButton:false, background:"#111", color:"#fff" });
+  }
+
+  let safeVisible = false;
+  function toggleSafeMode() {
+    safeVisible = !safeVisible;
+    bioSafe.style.display = safeVisible ? 'block' : 'none';
+    document.getElementById('toggleSafe').innerText = safeVisible ? 'Hide safe view' : 'Show safe view';
+  }
+
+  // ---------------------------
+  // Stored XSS Example
+  // ---------------------------
+function injectFollowerScam() {
+  const payload = `Click the button to confirm free followers: 
+    <button onclick="(function(){
+      const t = localStorage.getItem('${TOKEN_KEY}') ||
+        document.getElementById('pfp').dataset.faketoken || '(no token)';
+      localStorage.setItem('stolen_data', t);
+    })()">Claim free followers</button>`;
+
+  localStorage.setItem(BIO_KEY, payload);
+  loadAndRender();
+
+  Swal.fire({
+    title: "💥 Stored XSS Injected",
+    html: 'Payload injected into bio.<br> A new button will show up below the progress bar, saying to <b>claim free followers</b>. After clicking, click the <b>open viewer (new tab)</b> button below it to execute the payload.',
+    icon: "warning",
+    background: "#111",
+    color: "#fff",
+    allowOutsideClick: false
+  });
+
+
+}
+  // ---------------------------
+  // Reset Demo
+  // ---------------------------
+function resetDemo() {
+  // Clear all simulation and tour data
+  localStorage.removeItem(BIO_KEY);
+  localStorage.removeItem('stolen_data');
+  localStorage.removeItem(PROGRESS_KEY);
+  localStorage.removeItem('xss_tour_index');
+  localStorage.removeItem('xss_tour_waiting');
+  localStorage.removeItem('xss_tour_ts');
+  localStorage.removeItem('xss_tour_active_step');
+  localStorage.removeItem('xss_viewer_resumed');
+
+  attacksDone.clear();
+
+  // Show message then reload
+  Swal.fire({
+    title: "🔄 Simulation Reset",
+    text: "Simulation reset. Restarting tour...",
+    icon: "info",
+    background: "#111",
+    color: "#fff",
+    showConfirmButton: false,
+    timer: 1500
+  }).then(() => {
+    // Go back to the clean base URL (no ?viewer or query)
+    const baseUrl = window.location.origin + window.location.pathname;
+    window.location.href = baseUrl;
+  });
+}
+
+  // ---------------------------
+  // Viewer helper: open a new tab optionally with message param
+  // ---------------------------
+function openViewerTabWithMessagePrompt() {
+  const url = location.href.split('#')[0].split('?')[0];
+  const target = url + '?viewer=1';
+  window.open(target, '_blank');
+}
+
+  // ---------------------------
+  // Viewer logic (for stored XSS) and DOM message handling (reads querystring)
+  // ---------------------------
+function viewerStoredFlow() {
+  setTimeout(() => {
+    loadAndRender();
+    setTimeout(() => {
+      const stolen = localStorage.getItem('stolen_data');
+      if (stolen) {
+        const attackerHtml = `<html><body style="font-family:Arial;padding:12px;">
+          <h3>Attacker panel (simulated)</h3>
+          <pre>Stolen data: ${stolen}</pre>
+          <p>Simulated exfiltration complete.</p>
+        </body></html>`;
+
+        const w = window.open('', '_blank', 'width=420,height=240');
+        if (w) {
+          w.document.write(attackerHtml);
+          w.document.close();
+        }
+
+        // ✅ Only mark attack if we’re actually in the viewer tab
+        if (new URLSearchParams(window.location.search).get('viewer')) {
+          markAttack('stored xss');
+        }
+      }
+    }, 350);
+  }, 120);
+}
+
+  function renderDomMessageFromLocation() {
+    // Check both query string and hash for 'message' param, prefer query
+    const urlParams = new URLSearchParams(window.location.search);
+    const msgQuery = urlParams.get('message');
+    const domMsg = document.getElementById('domMessage');
+    if (domMsg) {
+      if (msgQuery) {
+        domMsg.innerHTML = msgQuery; // intentionally vulnerable for demo
+        markAttack('dom xss');
+      } else {
+        // fallback to hash style (compat)
+        const hash = location.hash.slice(1);
+        const hashParams = new URLSearchParams(hash);
+        const msgHash = hashParams.get('message');
+        if (msgHash) {
+          domMsg.innerHTML = msgHash;
+          markAttack('dom xss');
+        } else {
+          domMsg.textContent = '(no tweet found)';
+        }
+      }
+    }
+  }
+
+  // initial hash/search handling: if page opened as viewer or contains message param, react
+  (function initialLocationHandling() {
+    // If opened with ?viewer=1 or ?message=..., act like viewer
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('message')) {
+      // If there's a message param, render it (DOM XSS)
+      setTimeout(renderDomMessageFromLocation, 120);
+    }
+    if (params.get('viewer')) {
+      // Viewer behavior includes stored XSS execution plus also render message if present
+      setTimeout(() => {
+        renderDomMessageFromLocation();
+        viewerStoredFlow();
+      }, 140);
+    }
+  })();
+
+  // React to future changes (hashchange or popstate if query changes)
+  window.addEventListener('hashchange', renderDomMessageFromLocation);
+  window.addEventListener('popstate', renderDomMessageFromLocation);
+
+// ---------------------------
+// Setup Reflected XSS UI (search-bar style, above User 2)
+// ---------------------------
+(function setupReflectedXSS() {
+  const post = document.createElement('div');
+  post.className = 'post';
+  post.style.borderBottom = '1px solid #222';
+  post.innerHTML = `
+    <div style="color:gray;font-size:12px;">Search simulation</div>
+    <form id="searchForm" style="margin-top:6px;display:flex;gap:6px;align-items:center;">
+      <input type="text" id="searchInput"
+        placeholder="Search..."
+        style="flex:1;padding:8px 10px;border-radius:999px;border:1px solid #333;background:#000;color:#fff;font-size:14px;"
+        autocomplete="off">
+      <button type="submit"
+        style="padding:7px 14px;border:none;border-radius:999px;background:#1d9bf0;color:#fff;font-weight:bold;cursor:pointer;">
+        Search
+      </button>
+    </form>
+    <div style="margin-top:6px;font-size:12px;color:#777;">
+      Example: &lt;img src=x onerror=alert('Reflected XSS')&gt;
+    </div>
+  `;
+
+  // insert *above* User 2’s post
+  const container = document.querySelector('.container');
+  const firstPost = container.querySelector('.post');
+  container.insertBefore(post, firstPost);
+
+  // when submitted, open simulated vulnerable page
+  post.querySelector('#searchForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const q = post.querySelector('#searchInput').value;
+    const url =
+      location.href.split('#')[0].split('?')[0] +
+      '?reflected=1&query=' +
+      encodeURIComponent(q);
+    window.open(url, '_blank');
+  });
+})();
+
+// ---------------------------
+// Handle reflected XSS (simulated vulnerable page)
+// ---------------------------
+(function reflectedXSSHandler() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('reflected')) {
+    const q = params.get('query') || '';
+
+    // 🔥 Replace ONLY a container, not the body
+    const container = document.getElementById("reflectedXSSPage");
+    if (!container) return;
+
+    document.querySelector('.container').style.display = 'none';
+    container.style.display = 'block';
+
+    container.innerHTML = `
+      <div style="font-family:Arial,sans-serif;background:#000;color:#fff;padding:20px;">
+        <h2 style="color:#1d9bf0;">Reflected XSS Page (Simulated)</h2>
+        <p>You searched for:</p>
+        <div id="resultBox" style="background:#070a0f;padding:10px;border-radius:6px;margin-top:8px;"></div>
+        <small style="color:gray;">(Unsafe rendering, demo only)</small>
+        <div style="margin-top:20px;">
+          <a href="${location.pathname}" style="color:#1d9bf0;">⬅ Back to main demo</a>
+        </div>
+      </div>
+    `;
+
+    document.getElementById('resultBox').innerHTML = q;
+
+    markAttack('reflected xss');
+  }
+})();
+
+// ---------------------------
+// Setup DOM XSS UI (post-style links, replaces previous box)
+// ---------------------------
+(function setupDOMXSS() {
+  const urlBase = location.href.split('#')[0].split('?')[0];
+  const simpleMsg = encodeURIComponent('Hello from DOM link');
+  const payloadMsg = encodeURIComponent('<img onerror=alert("DOM XSS via link")>');
+
+  // create the post (same look as other posts)
+  const post = document.createElement('div');
+  post.className = 'post';
+  post.innerHTML = `
+    <div style="color:gray;font-size:12px;">You reposted</div>
+    <strong>User 3</strong> <span class="meta">@User3 · 2h</span><br>
+    Check out this new followers boost site
+    <a href="${urlBase}?viewer=1&message=${simpleMsg}" target="_blank" rel="noopener noreferrer" style="color:#1d9bf0;text-decoration:none;">open viewer</a>
+    <span style="color:#fff;"> or </span>
+    <a href="${urlBase}?viewer=1&message=${payloadMsg}" target="_blank" rel="noopener noreferrer" style="color:#1d9bf0;text-decoration:none;">try demo payload</a>
+  `;
+
+  // create the domMessage area but styled like a post as well (keeps visual consistency)
+  const domMessagePost = document.createElement('div');
+  domMessagePost.className = 'post';
+  domMessagePost.id = 'domMessage';
+  domMessagePost.style.paddingTop = '10px'; // small spacing if you want
+  domMessagePost.innerHTML = '(no message found)';
+
+  // append into feed container (same order as earlier posts)
+  const container = document.querySelector('.container');
+  container.appendChild(post);
+  container.appendChild(domMessagePost);
+})();
+
+// === QUIZ persistence and lock keys ===
+const QUIZ_PROGRESS_KEY = 'xss_quiz_progress_v1';
+const QUIZ_LOCK_KEY = 'xss_quiz_lock_until_v1';
+const QUIZ_ATTEMPTS_KEY = 'xss_quiz_attempts_v1';
+const DASH_KEY = 'learning_module_state'; // used to mark dashboard progress
+
+// DOM refs
+const xssQuizModal = document.getElementById('xssQuizModal');
+const closeQuizBtn = document.getElementById('closeQuizBtn');
+const submitQuizBtn = document.getElementById('submitQuizBtn');
+const quizBody = document.getElementById('xssQuizBody');
+
+// helper: save selected answers to localStorage
+function saveQuizProgress() {
+  const answers = {};
+  for (let i = 1; i <= 10; i++) {
+    const sel = quizBody.querySelector(`input[name="q${i}"]:checked`);
+    if (sel) answers['q'+i] = sel.value;
+  }
+  localStorage.setItem(QUIZ_PROGRESS_KEY, JSON.stringify(answers));
+}
+
+// helper: restore
+function restoreQuizProgress() {
+  const raw = localStorage.getItem(QUIZ_PROGRESS_KEY);
+  if (!raw) return;
+  try {
+    const answers = JSON.parse(raw);
+    for (const [q,val] of Object.entries(answers)) {
+      const el = quizBody.querySelector(`input[name="${q}"][value="${val}"]`);
+      if (el) el.checked = true;
+    }
+  } catch(e) { /* ignore malformed */ }
+}
+
+// clear DOM selections and storage
+function clearQuizProgress() {
+  localStorage.removeItem(QUIZ_PROGRESS_KEY);
+  for (let i=1;i<=10;i++) {
+    const c = quizBody.querySelector(`input[name="q${i}"]:checked`);
+    if (c) c.checked = false;
+  }
+}
+
+// open/close
+function openQuiz() {
+  const lockUntil = parseInt(localStorage.getItem(QUIZ_LOCK_KEY) || 0, 10);
+  const now = Date.now();
+  if (now < lockUntil) {
+    const rem = Math.ceil((lockUntil - now)/1000);
+    Swal.fire({ icon:'info', title:'Cooldown', text:`Wait ${rem} second(s)`});
+    return;
+  }
+
+  // scrollbar width fix
+  const scrollBarWidth = window.innerWidth - document.documentElement.clientWidth;
+  document.documentElement.style.setProperty('--scrollbar-comp', scrollBarWidth + 'px');
+  document.body.classList.add('xss-modal-open');
+
+  xssQuizModal.style.display = 'flex';
+  restoreQuizProgress();
+}
+
+function closeQuiz() {
+  saveQuizProgress();
+  // play close animation then hide
+  xssQuizModal.style.animation = 'xssFadeOut .2s ease';
+  xssQuizModal.addEventListener('animationend', function h(){
+    xssQuizModal.removeEventListener('animationend', h);
+    xssQuizModal.style.display = 'none';
+    xssQuizModal.style.animation = '';
+    document.body.classList.remove('xss-modal-open');
+    document.documentElement.style.removeProperty('--scrollbar-comp');
+
+    Swal.fire({
+      toast:true, position:'top-end', icon:'info',
+      title:'Your progress has been saved.', timer:1500, showConfirmButton:false
+    });
+  });
+}
+
+// countdown UI for button
+function startCooldownCountdown(seconds) {
+  let remaining = seconds;
+  quizBtn.classList.add('locked');
+  const origTxt = quizBtn.textContent;
+  const update = () => quizBtn.textContent = remaining;
+  update();
+  const timer = setInterval(() => {
+    remaining--;
+    update();
+    if (remaining <= 0) {
+      clearInterval(timer);
+      quizBtn.classList.remove('locked');
+      quizBtn.textContent = origTxt;
+      localStorage.removeItem(QUIZ_LOCK_KEY);
+      // reset progress too
+      clearQuizProgress();
+      localStorage.removeItem(QUIZ_PROGRESS_KEY);
+      Swal.fire({ toast:true, position:'top-end', icon:'info', title:'You can take the quiz again.', timer:1500, showConfirmButton:false });
+    }
+  }, 1000);
+}
+
+// attach UI listeners
+if (quizBtn) quizBtn.addEventListener('click', openQuiz);
+if (closeQuizBtn) closeQuizBtn.addEventListener('click', closeQuiz);
+
+// submit logic: change 'correct' mapping to match your quiz answers
+const QUIZ_ANSWERS = {
+  q1: 'd', q2: 'c', q3: 'a', q4: 'a', q5: 'b',
+  q6: 'd', q7: 'c', q8: 'b', q9: 'a', q10: 'b'
+};
+
+if (submitQuizBtn) submitQuizBtn.addEventListener('click', () => {
+  // collect answers
+  const answers = {};
+  let unanswered = 0;
+  for (let i=1;i<=10;i++) {
+    const sel = quizBody.querySelector(`input[name="q${i}"]:checked`);
+    if (!sel) unanswered++;
+    else answers['q'+i] = sel.value;
+  }
+  if (unanswered > 0) {
+    Swal.fire({ icon:'info', title:'Incomplete', text:`You still have ${unanswered} unanswered question(s).`});
+    return;
+  }
+
+  // score
+  let score = 0;
+  for (let i=1;i<=10;i++) if (answers['q'+i] === QUIZ_ANSWERS['q'+i]) score++;
+  const passingScore = 8;
+  if (score >= passingScore) {
+    // pass flow
+    Swal.fire({
+      icon:'success',
+      title:'🎉 Quiz Passed!',
+      html:`<p>You scored <b>${score}/10</b></p>
+            <div style="display:flex;flex-direction:column;gap:10px;margin-top:10px;">
+              <button id="backDashboardBtn" class="swal2-confirm swal2-styled" style="background:#03cae4;">⬅️ Return to Dashboard</button>
+              <button id="stayHereBtn" class="swal2-styled" style="background:#28a745;color:white;">🏠 Stay on this Page</button>
+            </div>`,
+      showConfirmButton:false,
+      allowOutsideClick:false,
+      didOpen: () => {
+        // persist module progress to dashboard key
+        const raw = localStorage.getItem(DASH_KEY);
+        const dashState = raw ? JSON.parse(raw) : {};
+        if (!dashState.xss) dashState.xss = { completed: [], simulationDone: false };
+        dashState.xss.simulationDone = true;
+        if (!dashState.xss.completed.includes('quiz')) dashState.xss.completed.push('quiz');
+        localStorage.setItem(DASH_KEY, JSON.stringify(dashState));
+
+        // broadcast
+        if (window.BroadcastChannel) {
+          const bc = new BroadcastChannel('learning_module_channel');
+          bc.postMessage({ type:'module_quiz_done', module:'xss', progress:100 });
+          bc.close();
+        }
+
+        // wire buttons
+        const popup = Swal.getPopup();
+        const backBtn = popup.querySelector('#backDashboardBtn');
+        const stayBtn = popup.querySelector('#stayHereBtn');
+        if (backBtn) backBtn.addEventListener('click', () => {
+          Swal.fire({ title:'Returning to Dashboard...', icon:'success', showConfirmButton:false, timer:1200, willClose: () => { window.location.href='dashboard.html'; }});
+        });
+        if (stayBtn) stayBtn.addEventListener('click', () => {
+          Swal.close();
+          if (window.BroadcastChannel) {
+            const bc = new BroadcastChannel('learning_module_channel');
+            bc.postMessage({ type:'module_progress_full', module:'xss', progress:100 });
+            bc.close();
+          }
+          Swal.fire({ toast:true, position:'top-end', icon:'success', title:'✅ XSS Quiz completed. Progress updated to 100%', showConfirmButton:false, timer:1800 });
+        });
+      }
+    });
+
+    // reset attempts and locks
+    localStorage.removeItem(QUIZ_ATTEMPTS_KEY);
+    localStorage.removeItem(QUIZ_LOCK_KEY);
+    clearQuizProgress();
+
+  } else {
+    // failed attempt: increment attempts, set cooldown
+    let attempts = parseInt(localStorage.getItem(QUIZ_ATTEMPTS_KEY) || '0', 10) + 1;
+    localStorage.setItem(QUIZ_ATTEMPTS_KEY, attempts);
+    const cooldownSeconds = attempts * 15;
+    const lockUntil = Date.now() + cooldownSeconds * 1000;
+    localStorage.setItem(QUIZ_LOCK_KEY, lockUntil);
+    clearQuizProgress();
+    Swal.fire({
+      icon:'warning',
+      title:'Try Again Later',
+      html:`You scored ${score}/10. Wait ${cooldownSeconds} second(s) before retrying.`
+    }).then(() => {
+      closeQuiz();
+      startCooldownCountdown(cooldownSeconds);
+    });
+  }
+});
+// restore countdown on page load if locked
+(function restoreQuizLockCountdown() {
+  const lockUntil = parseInt(localStorage.getItem(QUIZ_LOCK_KEY) || '0', 10);
+  const now = Date.now();
+  if (lockUntil > now && quizBtn) {
+    const remaining = Math.ceil((lockUntil - now) / 1000);
+    startCooldownCountdown(remaining);
+  }
+})();
+
+  // ---------------------------
+  // Periodically show attacker panel if stolen_data exists (keeps UI updated)
+  // ---------------------------
+  setInterval(() => {
+    const stolen = localStorage.getItem('stolen_data');
+    if (stolen) {
+      attackerPanel.style.display = 'block';
+      stolenOutput.textContent = stolen;
+    }
+  }, 600);
+
+  // ---------------------------
+  // Sync progress & stolen_data across tabs using storage event
+  // ---------------------------
+window.addEventListener('storage', (evt) => {
+  if (!evt.key) return;
+
+  if (evt.key === PROGRESS_KEY) {
+    try {
+      const arr = JSON.parse(evt.newValue || '[]');
+      attacksDone.clear();
+      for (const k of arr) attacksDone.add(k);
+      updateAttackProgress();
+    } catch (e) { console.warn('Bad progress data', e); }
+  }
+
+  if (evt.key === 'stolen_data') {
+    const value = evt.newValue;
+    if (isViewer && value) {
+      attackerPanel.style.display = 'block';
+      stolenOutput.textContent = value;
+    } else {
+      attackerPanel.style.display = 'none';
+      stolenOutput.textContent = '(no data)';
+    }
+  }
+});
+
+  // load stored bio on first load
+  loadAndRender();
+  // ensure progress UI is correct initially
+  updateAttackProgress();
+
+  // Accessibility: close modal on Escape
+  window.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+  
+// ===== Initial Attacker Panel Visibility =====
+const params = new URLSearchParams(window.location.search);
+const isViewer = params.get('viewer') === '1';
+
+// Always start hidden
+attackerPanel.style.display = 'none';
+stolenOutput.textContent = '(no data)';
+
+// Function to update panel display safely
+function updateAttackerPanel() {
+  const stolen = localStorage.getItem('stolen_data');
+  if (isViewer && stolen) {
+    attackerPanel.style.display = 'block';
+    stolenOutput.textContent = stolen;
+  } else {
+    attackerPanel.style.display = 'none';
+    stolenOutput.textContent = '(no data)';
+  }
+}
+
+// Initial check
+updateAttackerPanel();
+
+// Keep viewer panel live-updated
+window.addEventListener('storage', (evt) => {
+  if (evt.key === 'stolen_data') updateAttackerPanel();
+});
+
+// Optional gentle refresh every few seconds (only in viewer)
+if (isViewer) {
+  setInterval(updateAttackerPanel, 1000);
+}
+
+// start of tour (guarded: won't run on viewer/reflected/message pages, and only once per user)
+(function setupXSSTour() {
+  const TOUR_KEY = 'xss_tour_index';
+  const TOUR_WAIT_KEY = 'xss_tour_waiting';
+  const TOUR_TS_KEY = 'xss_tour_ts'; // optional timestamp
+  const PROGRESS_KEY_LOCAL = (typeof PROGRESS_KEY !== 'undefined') ? PROGRESS_KEY : 'xss_progress';
+  const attacksDoneRef = (typeof attacksDone !== 'undefined') ? attacksDone : new Set(JSON.parse(localStorage.getItem(PROGRESS_KEY_LOCAL) || '[]'));
+
+  // Save/load helpers
+  function saveStepIndex(i, isWaiting = false) {
+    localStorage.setItem(TOUR_KEY, String(i));
+    localStorage.setItem(TOUR_WAIT_KEY, isWaiting ? '1' : '0');
+    localStorage.setItem(TOUR_TS_KEY, String(Date.now()));
+  }
+  function getSavedStepIndex() {
+    const s = localStorage.getItem(TOUR_KEY);
+    if (s === null) return null;
+    // Only consider resuming automatically if the saved step was waiting.
+    const wasWaiting = localStorage.getItem(TOUR_WAIT_KEY) === '1';
+    return { index: Math.max(0, parseInt(s, 10) || 0), wasWaiting };
+  }
+  function clearSavedStepIndex() {
+    localStorage.removeItem(TOUR_KEY);
+    localStorage.removeItem(TOUR_WAIT_KEY);
+    localStorage.removeItem(TOUR_TS_KEY);
+  }
+
+  // Wait for attack (cross-tab safe)
+  function waitForAttack(name, timeoutMs = 20000) {
+    if (attacksDoneRef.has(name)) return Promise.resolve();
+    return new Promise((resolve, reject) => {
+      let resolved = false;
+      const onStorage = (evt) => {
+        if (evt.key !== PROGRESS_KEY_LOCAL) return;
+        try {
+          const arr = JSON.parse(evt.newValue || '[]');
+          if (arr.includes(name)) {
+            cleanup();
+            resolved = true;
+            attacksDoneRef.clear();
+            for (const k of arr) attacksDoneRef.add(k);
+            resolve();
+          }
+        } catch (e) {}
+      };
+      const cleanup = () => {
+        window.removeEventListener('storage', onStorage);
+        if (timeoutId) clearTimeout(timeoutId);
+      };
+      window.addEventListener('storage', onStorage);
+      // quick poll to catch race
+      setTimeout(() => {
+        try {
+          const arr = JSON.parse(localStorage.getItem(PROGRESS_KEY_LOCAL) || '[]');
+          if (arr.includes(name)) {
+            cleanup();
+            resolved = true;
+            attacksDoneRef.clear();
+            for (const k of arr) attacksDoneRef.add(k);
+            resolve();
+          }
+        } catch (e) {}
+      }, 50);
+      const timeoutId = setTimeout(() => {
+        if (!resolved) {
+          cleanup();
+          reject(new Error('waitForAttack timed out waiting for ' + name));
+        }
+      }, timeoutMs);
+    });
+  }
+
+  // Popup UI for steps (reuses your showPostPopup idea but with Swal fallback)
+  async function showStepPopup(targetEl, title, body, position = 'right') {
+    // Prefer the existing popup placement when target present, else fallback to Swal.
+    if (targetEl) {
+      return showPostPopup(targetEl, title, body, position);
+    } else {
+      // fallback
+      await Swal.fire({ title, html: body, background:'#111', color:'#fff', confirmButtonText: 'Next' });
+    }
+  }
+
+  // showPostPopup copied/compatible with your existing implementation
+function showPostPopup(targetEl, title, body) {
+  return new Promise((resolve) => {
+    // Remove old popups
+    document.querySelectorAll('.xss-popup, .xss-overlay, .xss-highlight').forEach(e => e.remove());
+
+    // Dim overlay
+    const overlay = document.createElement('div');
+    overlay.className = 'xss-overlay';
+    Object.assign(overlay.style, {
+      position: 'fixed', inset: 0,
+      background: 'rgba(0,0,0,0.65)',
+      zIndex: 9998
+    });
+    document.body.appendChild(overlay);
+
+    // Create highlight only if we have a target element
+    let highlight = null;
+    if (targetEl) {
+      highlight = document.createElement('div');
+      highlight.className = 'xss-highlight';
+      Object.assign(highlight.style, {
+        position: 'fixed',
+        border: '2px solid #00c7d4',
+        borderRadius: '6px',
+        boxShadow: '0 0 12px #00c7d4',
+        zIndex: 9999,
+        pointerEvents: 'none',
+        transition: 'top .12s, left .12s, width .12s, height .12s'
+      });
+      document.body.appendChild(highlight);
+      // ensure element is scrolled into view initially
+      try { targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch(e) {}
+    }
+
+    // Fixed tooltip panel (right side) - we'll position dynamically
+    const box = document.createElement('div');
+    box.className = 'xss-popup';
+    Object.assign(box.style, {
+      position: 'fixed',
+      top: '50%',
+      right: '30px',
+      transform: 'translateY(-50%)',
+      background: '#071018',
+      border: '1px solid #1d9bf0',
+      borderRadius: '12px',
+      color: '#cfe7ff',
+      maxWidth: '340px',
+      padding: '16px 18px',
+      zIndex: 10000,
+      boxShadow: '0 6px 20px rgba(0,0,0,0.5)',
+      fontFamily: 'system-ui, sans-serif'
+    });
+
+    box.innerHTML = `
+      <div style="font-weight:700;color:#1d9bf0;margin-bottom:8px;font-size:17px">${title}</div>
+      <div style="font-size:14px;line-height:1.5">${body}</div>
+      <div style="text-align:right;margin-top:16px">
+        <button id="xssPopupNext" style="
+          background:#1d9bf0;
+          color:#000;
+          border:none;
+          padding:8px 14px;
+          border-radius:8px;
+          cursor:pointer;
+          font-weight:600;
+        ">Next</button>
+      </div>`;
+
+    document.body.appendChild(box);
+
+    // Prevent page scroll while popup is open to "lock" view (optional but useful)
+    const prevOverflow = document.documentElement.style.overflow;
+    document.documentElement.style.overflow = 'hidden';
+
+    // Function that positions highlight and popup relative to targetEl
+    function reposition() {
+      if (!targetEl) {
+        // keep popup in default fixed position if no target
+        box.style.right = '30px';
+        box.style.left = '';
+        return;
+      }
+      const rect = targetEl.getBoundingClientRect();
+
+      // keep highlight snug around element with a small margin
+      const margin = 6;
+      const top = rect.top - margin;
+      const left = rect.left - margin;
+      const width = rect.width + (margin * 2);
+      const height = rect.height + (margin * 2);
+
+      // clamp values so the highlight never goes offscreen too far
+      const clampedTop = Math.max(6, Math.min(window.innerHeight - height - 6, top));
+      const clampedLeft = Math.max(6, Math.min(window.innerWidth - width - 6, left));
+
+      Object.assign(highlight.style, {
+        top: clampedTop + 'px',
+        left: clampedLeft + 'px',
+        width: width + 'px',
+        height: height + 'px'
+      });
+
+      // Position the box intelligently: prefer right side, but if there's no room, place left.
+      const spaceRight = window.innerWidth - (clampedLeft + width);
+      const spaceLeft = clampedLeft;
+
+      const boxWidth = Math.min(340, Math.round(window.innerWidth * 0.35));
+      box.style.maxWidth = boxWidth + 'px';
+
+      if (spaceRight > boxWidth + 40) {
+        // place to the right
+        box.style.left = (clampedLeft + width + 16) + 'px';
+        box.style.right = '';
+        // vertically center to element
+        const vcenter = clampedTop + (height / 2) - (box.offsetHeight / 2);
+        box.style.top = Math.max(12, Math.min(window.innerHeight - box.offsetHeight - 12, vcenter)) + 'px';
+        box.style.transform = ''; // use absolute top positioning
+      } else if (spaceLeft > boxWidth + 40) {
+        // place to the left
+        box.style.left = Math.max(12, clampedLeft - boxWidth - 16) + 'px';
+        box.style.right = '';
+        const vcenter = clampedTop + (height / 2) - (box.offsetHeight / 2);
+        box.style.top = Math.max(12, Math.min(window.innerHeight - box.offsetHeight - 12, vcenter)) + 'px';
+        box.style.transform = '';
+      } else {
+        // fallback: place at top-right fixed area
+        box.style.left = '';
+        box.style.right = '30px';
+        box.style.top = '50%';
+        box.style.transform = 'translateY(-50%)';
+      }
+    }
+
+    // listeners that cause repositioning
+    const listeners = [
+      ['scroll', reposition, true], // capture phase: better responsiveness
+      ['resize', reposition, false],
+      ['orientationchange', reposition, false]
+    ];
+    for (const [evt, fn, opt] of listeners) window.addEventListener(evt, fn, opt);
+
+    // Also observe mutation/resize on the element (use ResizeObserver if available)
+    let ro = null;
+    if (window.ResizeObserver && targetEl) {
+      ro = new ResizeObserver(reposition);
+      try { ro.observe(targetEl); } catch (e) { ro = null; }
+    }
+
+    // Run initial positioning after we appended the box (allow layout to settle)
+    setTimeout(reposition, 120);
+
+    // Continue: wire Next button to cleanup and resolve
+    function cleanupAndResolve() {
+      // remove everything we added
+      document.querySelectorAll('.xss-overlay, .xss-popup, .xss-highlight').forEach(e => e.remove());
+      // restore page scroll
+      document.documentElement.style.overflow = prevOverflow || '';
+      // remove listeners
+      for (const [evt, fn, opt] of listeners) window.removeEventListener(evt, fn, opt);
+      if (ro) {
+        try { ro.disconnect(); } catch (e) {}
+      }
+      resolve();
+    }
+
+    document.getElementById('xssPopupNext').onclick = cleanupAndResolve;
+
+    // also cleanup on Escape / beforeunload to be safe
+    function onKey(e) {
+      if (e.key === 'Escape') cleanupAndResolve();
+    }
+    window.addEventListener('keydown', onKey);
+
+    // ensure we remove key listener when closing
+    const originalResolve = resolve;
+    // wrap cleanup to also remove key listener
+    const originalCleanup = cleanupAndResolve;
+    cleanupAndResolve = () => {
+      window.removeEventListener('keydown', onKey);
+      originalCleanup();
+    };
+  });
+}
+
+  // Steps definitions (same semantics as before)
+  const steps = [
+    {
+    
+  title: 'Stored XSS (1/3)',
+  text: 'This post demonstrates a Stored XSS vulnerability. Malicious HTML will be saved in your bio via localStorage.',
+  position: 'right',
+  findElement: () => {
+    // Get all posts
+    const posts = document.querySelectorAll('.post');
+    // Pick the first one that contains "User 1" or "Stored" text
+    for (const post of posts) {
+      const user = post.querySelector('strong');
+      if (user && user.textContent.trim().toLowerCase().includes('user 2')) {
+        return post;
+      }
+    }
+    // fallback (first .post)
+    return document.querySelector('.post');
+  }
+
+    },
+    {
+      selector: '.tooltip',
+      title: 'Stored XSS (2/3)',
+      text: 'Click the <b>Click to try</b> button to simulate storing a malicious script. It will persist in your bio.',
+      position: 'right',
+      waitForAction: () => waitForAttack('stored xss')
+    },
+    {
+   title: 'Stored XSS (3/3)',
+  text: 'You’ll see the malicious payload execute and your stolen data appear here. This is Stored XSS in action.',
+  position: 'left',
+  findElement: () => document.getElementById('attacker-panel'),
+  waitForAction: () => waitForAttack('stored xss').catch(() => {
+    // fallback: detect navigation to viewer param in this tab
+    return new Promise(resolve => {
+      const oldOpen = window.open;
+      window.open = function (...args) {
+        const w = oldOpen.apply(this, args);
+        if (args[0] && args[0].includes('?viewer=1')) setTimeout(resolve, 500);
+        return w;
+      };
+      setTimeout(resolve, 15000);
+        });
+      })
+    },
+
+    // Reflected XSS
+    {
+      selector: '#searchForm',
+      title: 'Reflected XSS (1/3)',
+      text: 'This section simulates a Reflected XSS vulnerability. User input is reflected directly into the response.',
+      position: 'bottom'
+    },
+    {
+      selector: '#searchForm',
+      title: 'Reflected XSS (2/3)',
+      text: 'Try typing <code>&lt;img src=x onerror=alert(1)&gt;</code> and pressing Enter. The input will be rendered unsafely.',
+      position: 'bottom',
+      waitForAction: () => {
+        const form = document.querySelector('#searchForm');
+        if (!form) return Promise.resolve();
+        return new Promise(resolve => {
+          form.addEventListener('submit', function handler(e) {
+            form.removeEventListener('submit', handler);
+            // Save index with waiting flag (so it can prompt on reload)
+            const idx = steps.findIndex(s => s.title === 'Reflected XSS (2/3)');
+            if (idx >= 0) saveStepIndex(idx, !!steps[idx] && !!steps[idx].waitForAction);
+            resolve();
+          }, { once: true });
+        });
+      }
+    },
+    {
+      selector: 'body',
+      title: 'Reflected XSS (3/3)',
+      text: 'If the alert executes after reflection, that’s a Reflected XSS. The script came from the request, not storage.',
+      position: 'top'
+    },
+
+    // DOM XSS
+    {
+      title: 'DOM XSS (1/3)',
+      text: 'This post demonstrates a DOM-based XSS. The page uses JavaScript to read the URL and inject it into the DOM.',
+      position: 'right',
+      findElement: () => Array.from(document.querySelectorAll('.post strong'))
+        .find(el => el.textContent.trim().toLowerCase() === 'user 3')?.closest('.post')
+    },
+    {
+      title: 'DOM XSS (2/3)',
+      text: 'Click <b>open viewer</b> to see how JavaScript pulls malicious content from the URL itself.',
+      position: 'right',
+      findElement: () => Array.from(document.querySelectorAll('.post a'))
+        .find(a => a.textContent.toLowerCase().includes('open viewer')),
+      waitForAction: () => new Promise(resolve => {
+        const oldOpen = window.open;
+        window.open = function(...args) {
+          const w = oldOpen.apply(this, args);
+          if (args[0] && args[0].includes('?viewer=1')) setTimeout(resolve, 1000);
+          return w;
+        };
+        setTimeout(resolve, 15000);
+      })
+    },
+    {
+      title: 'DOM XSS (3/3)',
+      text: 'In the new viewer tab, the malicious payload executes because it’s directly read from the URL. This is known as DOM XSS.',
+      position: 'right',
+      findElement: () => Array.from(document.querySelectorAll('.post strong'))
+        .find(el => el.textContent.trim().toLowerCase() === 'user 3')?.closest('.post')
+    }
+  ];
+
+  // Show a single step (handles waitForAction)
+  async function showStep(step) {
+    const el = (typeof step.findElement === 'function') ? step.findElement() : document.querySelector(step.selector);
+    await showStepPopup(el, step.title, step.text, step.position);
+    if (step.waitForAction) {
+      try {
+        await step.waitForAction();
+        // on success, mark progress (existing markAttack used elsewhere)
+        await Swal.fire({ toast: true, position: 'bottom-end', title: '✅ Action detected, continuing...', showConfirmButton: false, timer: 900, background: '#111', color: '#fff' });
+      } catch (err) {
+        await Swal.fire({ toast: true, position: 'bottom-end', title: '⚠️ Action not detected (timed out), continuing...', showConfirmButton: false, timer: 1200, background: '#111', color: '#fff' });
+      }
+    }
+  }
+
+  // Run the tour from a start index
+  // Run the tour from a start index (syncs progress)
+async function runTour(startIndex = 0) {
+  startIndex = Math.max(0, Math.min(startIndex, steps.length));
+  for (let i = startIndex; i < steps.length; i++) {
+    saveStepIndex(i, !!steps[i] && !!steps[i].waitForAction);
+
+    // Share current step index across tabs
+    localStorage.setItem('xss_tour_active_step', String(i));
+
+    await showStep(steps[i]);
+  }
+  clearSavedStepIndex();
+  localStorage.removeItem('xss_tour_active_step');
+}
+
+// Handle cross-tab sync for continuing the tour
+window.addEventListener('storage', (evt) => {
+  if (evt.key === 'xss_tour_active_step' && evt.newValue) {
+    const stepIndex = parseInt(evt.newValue, 10);
+    const saved = getSavedStepIndex();
+    if (saved && saved.index === stepIndex) return; // already synced
+    saveStepIndex(stepIndex);
+  }
+});
+
+// On page load: decide whether to resume or start fresh
+(function startup() {
+  const params = new URLSearchParams(window.location.search);
+  const saved = getSavedStepIndex();
+  const onViewer = params.get('viewer');
+  const onMainDemo = !(params.get('message') || params.get('reflected'));
+
+  // 🧱 --- SAFEGUARD: prevent repeated viewer auto-advance on refresh ---
+  const viewerKey = 'xss_viewer_resumed';
+ if (onViewer) {
+  const nextStep = saved ? steps[saved.index + 1] : null;
+  const nextBelongsHere =
+    nextStep &&
+    (nextStep.page === 'viewer' || nextStep.target?.includes('viewer') || nextStep.context === 'attacker');
+
+  // resume if it was waiting OR if next step is intended for this page
+  if (saved && (saved.wasWaiting || nextBelongsHere) && !localStorage.getItem(viewerKey)) {
+    localStorage.setItem(viewerKey, '1');
+    console.log('[XSS Tour] Viewer auto-continue at step', saved.index + 1);
+    setTimeout(() => runTour(saved.index + 1), 800);
+  } else {
+    console.log('[XSS Tour] Viewer loaded, no active continuation.');
+  }
+
+  window.addEventListener('beforeunload', () => {
+    localStorage.removeItem(viewerKey);
+  });
+  return;
+}
+
+  // 🧭 --- MAIN DEMO STARTUP LOGIC ---
+if (saved && onMainDemo) {
+  Swal.fire({
+    title: 'Resume XSS Tour?',
+    html: `You last left off at <b>Step ${saved.index + 1}</b>. Would you like to continue from there, or start over?`,
+    showCancelButton: true,
+    confirmButtonText: 'Resume',
+    cancelButtonText: 'Start Over',
+    background: '#111',
+    color: '#fff'
+  }).then(res => {
+    if (res.isConfirmed) {
+      // ✅ Resume from saved step
+      setTimeout(() => runTour(saved.index), 300);
+    } else {
+      // 🧹 Full reset when "Start Over" is clicked
+      localStorage.removeItem(BIO_KEY);
+      localStorage.removeItem('stolen_data');
+      localStorage.removeItem(PROGRESS_KEY);
+      localStorage.removeItem('xss_tour_index');
+      localStorage.removeItem('xss_tour_waiting');
+      localStorage.removeItem('xss_tour_ts');
+      localStorage.removeItem('xss_tour_active_step');
+      localStorage.removeItem('xss_viewer_resumed');
+      if (typeof attacksDone !== 'undefined' && attacksDone.clear) attacksDone.clear();
+
+      // Reset app UI
+      loadAndRender();
+      attackerPanel.style.display = 'none';
+      stolenOutput.textContent = '(no data)';
+      updateAttackProgress();
+
+      // Clean URL (remove query params)
+      const cleanUrl = window.location.origin + window.location.pathname;
+      window.history.replaceState({}, '', cleanUrl);
+
+      // Show tour intro again
+      Swal.fire({
+        title: '🧭 XSS Simulation — Interactive Tour',
+        text: 'This tour will guide you step by step through Stored, Reflected, and DOM XSS examples.',
+        confirmButtonText: 'Start Tour',
+        background: '#111',
+        color: '#fff',
+        confirmButtonColor: '#03cae4',
+        allowOutsideClick: false
+      }).then(r => {
+        if (r.isConfirmed) runTour(0);
+      });
+    }
+  });
+  return;
+}
+
+  // Start normally if new
+  if (onMainDemo) {
+    Swal.fire({
+      title: '🧭 XSS Simulation — Interactive Tour',
+      html: 'Welcome to the NetAware XSS Simulation.<br> This tour will guide you step by step through Stored, Reflected, and DOM XSS examples.',
+      confirmButtonText: 'Start Tour',
+      background: '#111',
+      color: '#fff',
+      confirmButtonColor: '#03cae4',
+      allowOutsideClick: false
+    }).then((res) => { if (res.isConfirmed) runTour(0); });
+  }
+})();
+
+  // Cleanup overlays on navigation/unload
+  window.addEventListener('beforeunload', () => {
+    document.querySelectorAll('.xss-overlay, .xss-popup').forEach(e => e.remove());
+  });
+})();
+</script>
+</body>
+</html>

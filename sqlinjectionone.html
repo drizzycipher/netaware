@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Login — SQLi Simulation (Safe)</title>
+  <link rel="icon" type="image/png" href="photos/headerlogo.png">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { font-family: system-ui, Arial; padding:24px; background:#f6fbff; }
+    .card { max-width:820px; margin:12px auto; padding:18px; border-radius:12px; }
+    pre.sim { background:#0b1b24; color:#bfeefb; padding:12px; border-radius:8px; }
+    .leak { background:#fff6f6; border-left:4px solid #ff6b6b; padding:10px; border-radius:6px; }
+    .hint { color:#076; font-weight:600; }
+  </style>
+</head>
+<body>
+  <div class="card shadow-sm">
+    <h4>Safe SQLi Simulation — Login Form</h4>
+    <p class="small text-muted">This is a client-side simulation only. No real database queries are executed.</p>
+
+    <div class="row">
+      <div class="col-md-5">
+        <form id="loginForm">
+          <div class="mb-2">
+            <label class="form-label">Username</label>
+            <input id="username" class="form-control" placeholder="e.g. alice">
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Password</label>
+            <input id="password" type="password" class="form-control" placeholder="password">
+          </div>
+          <button class="btn btn-primary" type="submit">Login (simulate)</button>
+        </form>
+
+        <div id="actionNotes" class="mt-3 small text-muted">
+          Tip: Use the sample payloads in the explanation to see different simulation outputs.
+        </div>
+      </div>
+
+      <div class="col-md-7">
+        <div id="resultsArea" style="display:none;">
+          <h6>Simulated DB query (what an insecure app *might* build)</h6>
+          <pre id="simQuery" class="sim"></pre>
+
+          <h6>Simulation steps</h6>
+          <ol id="steps"></ol>
+
+          <div id="leak" class="leak mt-2" style="display:none;">
+            <strong>Simulated leaked data:</strong>
+            <pre id="leakData"></pre>
+            <div class="small text-muted">This is scripted demo output — not from a real database.</div>
+          </div>
+
+          <div class="mt-3">
+            <strong>Explanation</strong>
+            <p id="explain" class="small"></p>
+          </div>
+        </div>
+
+        <div id="intro" class="mt-2">
+          <h6>How this safe demo works</h6>
+          <ul>
+            <li>Client builds a **fake** query string for display only (no real execution).</li>
+            <li>If input matches certain *demo triggers*, the demo shows a scripted “leak”.</li>
+            <li>This is for teaching only — real apps should use prepared statements or ORM parameterization.</li>
+          </ul>
+          <div class="mt-2">
+            <b>Sample demo triggers (type into password to test):</b>
+            <ul class="small">
+              <li><code>' OR '1'='1</code> — simulates a logic-bypass payload</li>
+              <li><code>UNION SELECT</code> — simulates a UNION-style exfiltration attempt</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div><!-- row -->
+  </div><!-- card -->
+
+<script>
+  // Purely client-side simulation. No DB access.
+  document.getElementById('loginForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const u = (document.getElementById('username').value || '').trim();
+    const p = (document.getElementById('password').value || '').trim();
+
+    // Build a fake "vulnerable" query string for display only.
+    // IMPORTANT: we do NOT execute this. It's for education/demonstration only.
+    const fakeQuery = `SELECT * FROM users WHERE username = '${u}' AND password = '${p}';`;
+
+    // Reset UI
+    document.getElementById('resultsArea').style.display = 'block';
+    document.getElementById('simQuery').textContent = fakeQuery;
+    const steps = document.getElementById('steps'); steps.innerHTML = '';
+    const explain = document.getElementById('explain');
+    const leakBox = document.getElementById('leak'); leakBox.style.display = 'none';
+
+    // Step: input added to query
+    const addStep = (txt) => {
+      const li = document.createElement('li'); li.textContent = txt; steps.appendChild(li);
+    };
+
+    addStep('Form input was concatenated into the SQL query (displayed above).');
+
+    // Detect demo patterns and show scripted outputs
+    const normalized = p.toLowerCase();
+    if (normalized.includes("or '1'='1") || normalized.includes('or 1=1')) {
+      addStep('Payload makes the WHERE clause always true — this would return many rows.');
+      // fake leak
+      document.getElementById('leakData').textContent =
+`id | username | email
+---+----------+-----------------
+1  | admin    | admin@example.com
+2  | alice    | alice@example.com`;
+      leakBox.style.display = 'block';
+      explain.textContent = 'This is a simulated logic bypass: concatenating user input into a query can let attackers change query logic. Use parameterized queries instead.';
+      return;
+    }
+
+    if (normalized.includes('union select')) {
+      addStep('Payload uses UNION to combine different result sets — it can pull columns from other tables.');
+      document.getElementById('leakData').textContent =
+`username | password_hash
+---------+--------------------
+admin    | $pbkdf2$...`;
+      leakBox.style.display = 'block';
+      explain.textContent = 'This simulates a UNION-based exfiltration attempt. In real systems, validate and parameterize inputs; enforce least privilege for DB users.';
+      return;
+    }
+
+    // default (no attack): normal behavior
+    addStep('No attack patterns detected. The query would normally return at most one row for correct credentials.');
+    explain.textContent = 'No demo trigger found. This demonstrates normal login flow. Always use server-side prepared statements and never trust user input.';
+  });
+</script>
+</body>
+</html>

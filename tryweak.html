@@ -1,0 +1,921 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>NetAware — Weak Password Simulation</title>
+  <link rel="icon" type="image/png" href="photos/headerlogo.png">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    :root{
+      --deep-navy:#1c2430;
+      --teal:#00c7d4;
+      --soft-cyan:#e9fbff;
+      --pale:#f6fbfc;
+      --pink:#ffb6d5;
+      --success:#28a745;
+      --danger:#dc3545;
+      --glass: rgba(255,255,255,0.85);
+      --accent:#03cae4; 
+      --muted:#475d66; 
+      --card:#fff; 
+      --bg:#f7fcff;
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+    .custom-dashboard-btn {
+  background-color: #03cae4 !important; /* teal accent color */
+  color: white !important;
+  border: none !important;
+  border-radius: 8px !important;
+  padding: 8px 16px !important;
+  font-weight: 600 !important;
+  transition: background 0.3s;
+}
+
+.custom-dashboard-btn:hover {
+  background-color: #029bb3 !important; /* darker on hover */
+}
+    body{font-family: Inter, system-ui, Arial; background: linear-gradient(180deg,var(--bg),#eef9ff); color:var(--muted); padding:0; margin:0;}
+    .logo{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--teal),#00a8c6);display:flex;align-items:center;justify-content:center;font-weight:700;color:#082;box-shadow:0 4px 8px rgba(0,0,0,0.15)}
+    .brand{font-size:20px;font-weight:700}
+    .sub{font-size:12px;color:rgba(255,255,255,0.85)}
+    .container{max-width:1100px;margin:28px auto;padding:20px}
+    .layout{display:flex;flex-direction:column;align-items:center;gap:12px;background:var(--card); border-radius:12px; box-shadow:0 10px 30px rgba(3,202,228,0.08);}
+    .card{background:var(--card);border-radius:12px;padding:22px;box-shadow:0 6px 18px rgba(12,30,40,0.06)}
+    .story{border-left:6px solid var(--teal);background:var(--soft-cyan);padding:18px;border-radius:8px}
+    h5{margin:0 0 8px 0; color: var(--teal)}
+    .instructions { background:#fff; border-radius:10px; padding:14px; border:1px solid rgba(3,202,228,0.06); box-shadow:0 8px 20px rgba(3,202,228,0.05); margin-bottom:14px; }
+    .instructions h6 { font-size:1rem; font-weight:600; color:#03485f; margin-bottom:8px; }
+    .step { background:#f3fbff; border-left:4px solid var(--accent); padding:8px; border-radius:6px; margin-bottom:8px; }
+    .step strong{color:var(--deep-navy)}
+    form.login{display:flex;flex-direction:column;gap:12px}
+    label{font-size:13px;color:var(--muted)}
+    .input{display:block;width:100%;padding:12px;border-radius:8px;border:1px solid #e6eef1;background:transparent}
+    .btn{background:var(--teal);color:#fff;padding:10px 14px;border-radius:9px;border:0;cursor:pointer;font-weight:700}
+    .btn.secondary{background:transparent;color:var(--teal);border:1px solid rgba(0,199,212,0.18)}
+    .meter{height:12px;background:#eef6f8;border-radius:20px;overflow:hidden}
+    .meter>i{display:block;height:100%;width:0%;background:linear-gradient(90deg,var(--pink),var(--teal));transition:width .35s ease}
+    .meter-label{font-size:13px;color:var(--muted);display:flex;justify-content:space-between}
+    .feedback{padding:10px;border-radius:8px;background:#fff;border:1px dashed rgba(0,0,0,0.04);font-size:14px;color:var(--muted)}
+    .danger{color:var(--danger);font-weight:700}
+    .success{color:var(--success);font-weight:700}
+    .result{padding:14px;border-radius:10px;background:linear-gradient(180deg,#ffffff,#f8ffff);border-left:6px solid var(--teal)}
+    .progress-wrap{display:flex;align-items:center;gap:12px;width:100%}
+    .progress{height:10px;background:#ebeff0;border-radius:999px;flex:1;overflow:hidden;min-width:0}
+    .progress .progress-bar {height: 100%;background: var(--teal);transition: width 0.35s;display: block;}
+    .progress-text { font-size:0.9rem; font-weight:600; margin-bottom:6px; text-align:center; }
+    .btn-accent {
+      background-color: #03cae4;
+      color: white;
+      font-weight: 600;
+      padding: 10px 18px;
+      border-radius: 6px;
+      border: none;
+      transition: background 0.3s ease;
+      min-width: 160px;
+      text-align: center;
+    }
+    .btn-accent:hover {
+      background-color: #02b3cb;
+    }
+    .small{font-size:13px;color:var(--muted)}
+    footer{margin-top:24px;text-align:center;color:var(--muted);font-size:13px}
+    @media(max-width:980px){.layout{grid-template-columns:1fr;}.container{padding:14px}}
+    .login .input {
+      width: 100%;
+      box-sizing: border-box;
+    }
+    #pwd {
+      width: 100%;
+      box-sizing: border-box;
+      padding-right: 40px; /* space for eye icon */
+    }
+    /* New: top controls area where reset sits */
+    .controls-top {
+      display:flex;
+      justify-content:flex-end;
+      gap:12px;
+      align-items:center;
+      margin-bottom:10px;
+    }
+    /* Make sure progress label doesn't push the bar too small on very narrow screens */
+    .progress-label {
+      min-width:44px;
+      text-align:right;
+    }
+    .modal-body { max-height:60vh; overflow:auto;}
+    input[type="password"]::-ms-reveal,
+    input[type="password"]::-ms-clear {
+      display: none;
+    }
+    input[type="password"]::-webkit-password-toggle-button,
+    input[type="password"]::-webkit-inner-spin-button,
+    input[type="password"]::-webkit-contacts-auto-fill-button {
+      display: none;
+    }
+    input[type="password"]::-webkit-textfield-decoration-container {
+      display: none;
+    }
+    .header { background:#1c1f2b; border-bottom: 4px solid #00c7d4; padding:12px 24px; display:flex; align-items:center; gap:12px; box-shadow:0 2px 6px rgba(3,202,228,0.05); position:sticky; top:0; z-index:100; }
+    .logo-circle { width:50px; height:50px; border-radius:50%; background:#03cae4; display:flex; align-items:center; justify-content:center; }
+    .logo-circle img { width:28px; height:28px; object-fit:contain; }
+    .forum-name { font-size:1.4rem; font-weight:700; color:#fff; }
+  </style>
+</head>
+<body>
+  <div class="header">
+  <div class="logo-circle"><img src="netaware-logo.png" alt="Logo"></div>
+  <div class="forum-name">NetAware Login</div>
+</div>
+  <div class="container">
+    <div class="layout">
+      <div class="card">
+        <div class="story">
+          <h5>📘 Story</h5>
+          <p> You’ve just joined a popular online community where people share ideas, photos, and stories. 
+          As you create your account, you’re asked to set a password, something quick and easy. 
+          But what you don’t realize is that hackers are constantly scanning accounts for weak passwords to break into. 
+          In this simulation, you’ll experience how easily an attacker can exploit simple passwords, 
+          and learn how small changes can make your digital identity much safer.</p>
+        </div>
+
+        <hr style="margin:16px 0;border:none;border-top:1px solid rgba(0,0,0,0.04)">
+
+        <div class="instructions">
+          <h6>Simulation Instructions</h6>
+          <div class="step"><strong>How to Begin:</strong>
+            <ol>
+              <li>Input a <strong>weak password</strong> first.</li>
+              <li>Then a <strong>medium password</strong>.</li>
+              <li>Finally, input a <strong>strong password</strong> to proceed to the quiz.</li>
+              <li>Follow instructions prompts after each stage.</li>
+            </ol>
+          </div>
+        </div>
+
+        <hr style="margin:16px 0;border:none;border-top:1px solid rgba(0,0,0,0.04)">
+        <!-- Progress and Buttons -->
+        <div id="progressContainer" style="margin-top:10px; text-align:center;">
+          <div class="progress-text" id="progressText">Progress: 0/3</div>
+          <div class="progress mb-2" style="height: 18px; border-radius: 8px; overflow: hidden;">
+            <div id="progressBar" class="progress-bar bg-info" style="width: 0%; transition: width 0.3s;"></div>
+          </div>
+
+          <div id="simButtons" style="display:flex; justify-content:center; align-items:center; flex-wrap:wrap; gap:10px; margin-top:12px;">
+            <button id="resetStageBtn" type="button" class="btn-accent">Reset Stage</button>
+            <button id="startQuizBtn" type="button" class="btn-accent" style="display:none;">Start Quiz</button>
+            <button id="resetSimBtn" type="button" class="btn-accent">Reset Simulation</button>
+          </div>
+        </div>
+
+        <aside class="card" style="background:var(--glass);backdrop-filter:blur(8px);max-width:420px;margin:30px auto">
+          <div style="text-align:center;margin-bottom:14px">
+            <div style="width:70px;height:70px;margin:auto;border-radius:50%;background:linear-gradient(135deg,var(--teal),#00a8c6);display:flex;align-items:center;justify-content:center;font-size:28px;color:#fff;box-shadow:0 4px 10px rgba(0,0,0,0.1)">🔐</div>
+            <h3>Secure Login (Simulation)</h3>
+            <p style="font-size:13px;color:var(--muted)">Sign in with a username and password to test its strength</p>
+          </div>
+
+          <form id="login-form" class="login" onsubmit="return false;">
+            <div>
+              <label>Username</label>
+              <input id="user" class="input" placeholder="e.g. user@example.com">
+            </div>
+            <div>
+ <div>
+  <label>Password</label>
+  <div style="position:relative;">
+    <input id="pwd" type="password" class="input" placeholder="Enter your password" style="padding-right:40px;">
+    <span id="togglePwd" 
+          style="position:absolute;right:12px;top:50%;transform:translateY(-50%);
+                 cursor:pointer;font-size:18px;color:var(--muted);user-select:none;">👁️</span>
+  </div>
+</div>
+            <div style="text-align:right;font-size:12px">
+              <a href="#" style="color:var(--teal);text-decoration:none">Forgot password?</a>
+            </div>
+
+            <hr style="margin:12px 0;border:none;border-top:1px solid rgba(0,0,0,0.06)">
+
+            <div>
+              <div class="meter-label"><span>Password strength</span><span id="strength-text">—</span></div>
+              <div class="meter"><i id="meter-fill"></i></div>
+            </div>
+
+            <div id="tips" class="feedback">Tip: mix words, numbers, and special characters.</div>
+
+            <div style="display:flex;gap:8px;margin-top:8px">
+              <button id="checkBtn" class="btn" style="flex:1">Login</button>
+            </div>
+
+            <div style="margin-top:12px;font-size:13px;color:var(--muted);text-align:center">
+              Follow the three password stages to unlock the final quiz.
+            </div>
+          </form>
+        </aside>
+      </div>
+    </div>
+    <footer>Made for learning • This is a safe, local simulation.</footer>
+  </div>
+  <!-- QUIZ MODAL -->
+<div class="modal fade" id="quizModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content p-3">
+      <div class="modal-header">
+        <h5 class="modal-title">🧠 Quick Quiz: Weak Passwords</h5>
+      </div>
+      <div class="modal-body">
+      <div class="quiz-question">
+  <b>1. Recall:</b> Weak passwords often contain <b>_____</b> that attackers can easily guess, such as names, birthdays, or simple keyboard patterns.<br>
+  <label><input type="radio" name="q1" value="a"> predictable personal information</label><br>
+  <label><input type="radio" name="q1" value="b"> random symbols and numbers</label><br>
+  <label><input type="radio" name="q1" value="c"> long unrelated phrases</label><br>
+  <label><input type="radio" name="q1" value="d"> unique 16-character strings</label>
+</div>
+
+<hr>
+<div class="quiz-question">
+  <b>2. Scenario:</b>
+  After realizing that your old password “Fluffy123” was flagged as very weak by your password checker, you decided to create a stronger one.  
+  You thought about something memorable but harder for others to guess. After some thought, you changed your password to <code>MyCat2024</code>.  
+  The password strength meter now shows “medium.” You feel a little safer knowing it’s stronger than before. What improvement most likely made it harder to crack?<br>
+  <label><input type="radio" name="q2" value="b"> It uses a word familiar to you, like your pet’s name, making it memorable.</label><br>
+  <label><input type="radio" name="q2" value="a"> It mixes uppercase, lowercase letters, and numbers instead of only letters.</label><br>
+  <label><input type="radio" name="q2" value="c"> It’s longer than your previous password, even if it’s still a common word.</label><br>
+  <label><input type="radio" name="q2" value="d"> It’s unique to this account and not used elsewhere.</label>
+</div>
+
+<hr>
+<div class="quiz-question">
+  <b>3. Scenario:</b> You used <code>BlueTigersDanceAtSunrise21!</code> and got a “Strong” rating.  
+  Why does this password resist cracking attempts better than “MyCat2024”?<br>
+  <img src="photos/strong_password_example.png" alt="Strong password example on screen" class="screenshot"><br>
+  <h6 style="margin-top: 5px;margin-bottom: 15px; font-size: 12px"><i>Source: Image taken from the simulation.</i></h6>
+  <label><input type="radio" name="q3" value="a"> It’s long, random, and hard to predict.</label><br>
+  <label><input type="radio" name="q3" value="b"> It’s your favorite quote.</label><br>
+  <label><input type="radio" name="q3" value="c"> It contains your birth year.</label><br>
+  <label><input type="radio" name="q3" value="d"> It matches your phone PIN.</label>
+</div>
+<hr>
+<div class="quiz-question">
+  <b>4. Scenario:</b>
+  You just found out that someone accessed both your social media and online banking accounts without your permission.  
+  After some investigation, you realize the attacker used the exact same password you had set for both accounts.  
+  You remember thinking it would be easier to remember a single password rather than juggling multiple ones.  
+  Now you understand that one small convenience caused a big security problem. What risky behavior allowed this to happen?
+  <br>
+  <img src="photos/password_reuse_example.jpg" alt="Password reuse across multiple sites" class="screenshot"><br>
+  <h6 style="margin-top: 5px;margin-bottom: 15px; font-size: 12px"><i>Source: Reddit. (2025). "Does this appear to be a legitimate notification from Facebook itself? https://www.reddit.com/r/facebook/comments/1ibslfm/does_this_appear_to_be_a_legitimate_notification/</i></h6>
+  <label><input type="radio" name="q4" value="a"> Using the same password on different sites</label><br>
+  <label><input type="radio" name="q4" value="b"> Using a strong passphrase</label><br>
+  <label><input type="radio" name="q4" value="c"> Enabling two-factor authentication</label><br>
+  <label><input type="radio" name="q4" value="d"> Changing passwords regularly</label>
+</div>
+<hr>
+<div class="quiz-question">
+  <b>5. Scenario:</b> Even though you used a strong password, a hacker couldn’t access your account without a one-time code sent to your phone.  
+  What extra layer of protection stopped them?<br>
+  <img src="photos/mfa_code_prompt.png" alt="Multi-factor authentication prompt" style="width:550px; height:auto;" class="screenshot"><br>
+  <h6 style="margin-top: 5px;margin-bottom: 15px; font-size: 12px"><i>Source: Image taken by Francis Aves, 2025.</i></h6>
+  <label><input type="radio" name="q5" value="b"> Incognito browsing</label><br>
+  <label><input type="radio" name="q5" value="c"> Password hint</label><br>
+  <label><input type="radio" name="q5" value="d"> CAPTCHA check</label><br>
+  <label><input type="radio" name="q5" value="a"> Multi-factor authentication (MFA)</label><br>
+</div>
+<hr>
+<div class="quiz-question">
+  <b>6. Recall:</b> A password that can be easily guessed using personal details like your birthday is considered ______.<br>
+  <label><input type="radio" name="q6" value="b"> Encrypted</label><br>
+  <label><input type="radio" name="q6" value="c"> Medium</label><br>
+  <label><input type="radio" name="q6" value="a"> Weak</label><br>
+  <label><input type="radio" name="q6" value="d"> Secured</label>
+</div>
+<hr>
+<div class="quiz-question">
+   <b>7. Scenario:</b> You just received an alert that someone accessed your online accounts: email, shopping site, and cloud storage. Upon checking, you discover the hacker guessed your password easily. You realize your password was short and simple, like <code>123456</code>, which made it easy to crack. What password mistake allowed this to happen?<br>
+  <label><input type="radio" name="q7" value="a"> Password reuse</label><br>
+  <label><input type="radio" name="q7" value="b"> Weak Password Complexity</label><br>
+  <label><input type="radio" name="q7" value="c"> Two-step verification not enabled</label><br>
+  <label><input type="radio" name="q7" value="d"> Secure encryption</label>
+</div>
+<hr>
+<div class="quiz-question">
+  <b>8. Recall:</b> A long but easy-to-remember sentence used as a secure password is called a ______.<br>
+  <label><input type="radio" name="q8" value="b"> Token key</label><br>
+  <label><input type="radio" name="q8" value="c"> Encryption phrase</label><br>
+  <label><input type="radio" name="q8" value="d"> Secret string</label><br>
+  <label><input type="radio" name="q8" value="a"> Passphrase</label>
+</div>
+<hr>
+<div class="quiz-question">
+  <b>9. Recall:</b> Multi-factor authentication adds a ______ layer that verifies your identity beyond your password.<br>
+  <label><input type="radio" name="q9" value="a"> second</label><br>
+  <label><input type="radio" name="q9" value="b"> optional</label><br>
+  <label><input type="radio" name="q9" value="c"> weak</label><br>
+  <label><input type="radio" name="q9" value="d"> hidden</label>
+</div>
+<hr>
+<div class="quiz-question">
+  <b>10. Recall:</b><br>
+  Which of the following practices most effectively makes a password secure and harder to guess? (Choose the best answer)<br>
+  <label><input type="radio" name="q10" value="b"> Using a slightly longer password that includes your pet’s name and favorite number</label><br>
+  <label><input type="radio" name="q10" value="c"> Adding a number at the end of a common word, like <code>password123</code></label><br>
+  <label><input type="radio" name="q10" value="a"> Using a mix of uppercase, lowercase letters, numbers, and symbols in a unique password for each account</label><br>
+  <label><input type="radio" name="q10" value="d"> Changing your password frequently but keeping it simple, like <code>abcd2024</code></label>
+</div>
+          <div id="quizResult" class="mt-3 small text-center"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="closeQuizBtn" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="submit" id="submitQuizBtn" class="btn-accent">Submit Quiz</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+  const DASH_KEY = 'learning_module_state';
+  const moduleKey = 'weakpw'; // ✅ make sure this matches your dashboard key
+  const progressData = JSON.parse(localStorage.getItem(DASH_KEY) || "{}");
+
+  // ✅ Check if the module exists in localStorage
+  const module = progressData[moduleKey];
+
+  // ✅ If module data doesn’t exist or lessons are incomplete
+  if (!module || !module.completed || module.completed.length < 3) {
+    Swal.fire({
+      icon: 'warning',
+      title: '⚠️ Access Denied',
+      html: `
+        <p>You need to complete all lessons first before trying the simulation.</p>
+        <p><b>Required:</b> Lesson 1, Lesson 2, and Lesson 3</p>
+      `,
+      confirmButtonText: 'Go Back to Dashboard',
+      customClass: {
+        confirmButton: 'custom-dashboard-btn'
+      }
+    }).then(() => {
+      window.location.href = 'dashboard.html';
+    });
+  }
+});
+    const pwd = document.getElementById('pwd');
+  const fill = document.getElementById('meter-fill');
+  const strengthText = document.getElementById('strength-text');
+  const tips = document.getElementById('tips');
+  const outText = tips;
+  const crackTime = document.createElement('div');  
+  document.querySelector('.login').appendChild(crackTime);
+  const progressBar = document.getElementById('progressBar');
+  const progressLabel = document.getElementById('progressText');
+  const checkBtn = document.getElementById('checkBtn');
+  const resetBtn = document.getElementById('resetSimBtn');  
+  let stage = 1;
+  let progressStage = 0;
+
+  // Load progress from localStorage
+  const savedProgress = localStorage.getItem('passwordProgress');
+  const savedStage = localStorage.getItem('passwordStage');
+  if (savedProgress !== null) progressStage = parseInt(savedProgress);
+  if (savedStage !== null) stage = parseInt(savedStage);
+  updateProgressUI();
+
+  // Save progress whenever it changes
+  function saveProgress() {
+    localStorage.setItem('passwordProgress', progressStage);
+    localStorage.setItem('passwordStage', stage);
+  }
+
+  const togglePwd = document.getElementById('togglePwd');
+  togglePwd.addEventListener('click', () => {
+    if (pwd.type === 'password') {
+      pwd.type = 'text';
+      togglePwd.textContent = '🙈';
+    } else {
+      pwd.type = 'password';
+      togglePwd.textContent = '👁️';
+    }
+  });
+
+function updateProgressUI() {
+  progressBar.style.width = (progressStage / 3 * 100) + '%';
+  progressLabel.textContent = `Progress: ${progressStage}/3`;
+  updateTips();
+  saveProgress();
+
+  // Show Start Quiz button only when progress is 3/3
+  const startQuizBtn = document.getElementById('startQuizBtn');
+  if (progressStage === 3) {
+    startQuizBtn.style.display = 'inline-block';
+  } else {
+    startQuizBtn.style.display = 'none';
+  }
+}
+function updateTips() {
+  if (progressStage === 0) {
+    tips.textContent = 'Tip: Start simple. Try short common words or numbers.';
+  } else if (progressStage === 1) {
+    tips.textContent = 'Tip: Add uppercase letters, numbers, or a symbol to make it stronger.';
+  } else if (progressStage === 2) {
+    tips.textContent = 'Tip: Use a long mix of words, numbers, and special characters for high security.';
+  } else if (progressStage === 3) {
+    tips.textContent = 'You reached the final stage. Strong passwords protect your accounts best.';
+  }
+}
+
+  // Helper to clear the password input and meter after advancing stages
+  function clearPasswordInput() {
+    pwd.value = '';
+    fill.style.width = '0%';
+    strengthText.textContent = '—';
+    // optionally reset crack time/out text
+    crackTime.textContent = '';
+    // keep focus on password so user can type next right away
+    pwd.focus();
+  }
+
+  function evaluate(p) {
+    const username = document.getElementById('user').value.trim().toLowerCase();
+    let s = 0;
+    if (!p) return { s: 0, l: 'Empty' };
+
+    // scoring system — max 100%
+    s += Math.min(50, Math.max(0, (p.length - 4) * 5));
+    if (/[a-z]/.test(p) && /[A-Z]/.test(p)) s += 20;
+    if (/\d/.test(p)) s += 15;
+    if (/[^A-Za-z0-9]/.test(p)) s += 15;
+
+    const bad = ["123456", "123", "1234", "password", "123456789", "12345", "12345678",
+    "qwerty", "111111", "123123", "abc123", "password1",
+    "1234567", "dragon", "letmein", "monkey", "football",
+    "iloveyou", "admin", "welcome", "sunshine", "princess",
+    "cisco123", "hello123", "pass123", "user123",
+    "admin123", "password123", "1234567890", "letmein123", "welcome1",
+    "qwerty123", "passw0rd", "p@ssword", "iloveyou1", "admin2023",
+    "guest", "guest123", "user", "user1234", "test", "test123",
+    "asdfgh", "zxcvbn", "superman", "batman", "pokemon", "naruto",
+    "dragon123", "love123", "football1", "baseball", "trustno1",
+    "hello1234", "welcome123", "qwe123", "qweasd", "login123",
+    "root", "root123", "default", "default123", "changeme"];
+    for (const c of bad) {
+      if (p.toLowerCase().includes(c)) s -= 30;
+    }
+    if (/(.)\1{3,}/.test(p)) s -= 10;
+    if (username && p.toLowerCase().includes(username)) s = Math.min(s, 20);
+
+    s = Math.max(0, Math.min(100, Math.round(s)));
+
+    let l = 'Very weak';
+    if (s < 25) l = 'Very weak';
+    else if (s < 45) l = 'Weak';
+    else if (s < 70) l = 'Medium';
+    else if (s < 90) l = 'Strong';
+    else l = 'Very strong';
+
+    if (username && p.toLowerCase().includes(username)) {
+      l = 'Weak (contains your name)';
+    }
+
+    return { s, l };
+  }
+
+  function crackEstimate(score) {
+    if (score < 25) return "Cracked instantly";
+    if (score < 45) return "Cracked in a few hours";
+    if (score < 70) return "Cracked in days or weeks";
+    if (score < 90) return "Cracked in decades";
+    return "Cracked in centuries (virtually impossible)";
+  }
+
+  pwd.addEventListener('input', () => {
+    const { s, l } = evaluate(pwd.value);
+    fill.style.width = s + '%';
+    strengthText.textContent = `${l} (${s}%)`;
+  });
+
+  checkBtn.addEventListener('click', () => {
+    const { s, l } = evaluate(pwd.value);
+    if (!pwd.value) {
+      Swal.fire('Oops!', 'Please enter a password first.', 'warning');
+      return;
+    }
+
+    crackTime.textContent = "⏱ Estimated crack time: " + crackEstimate(s);
+
+    // Stage 1: weak password
+    if (stage === 1 && s < 45) {
+  Swal.fire({
+    title: 'Next Step!',
+    text: 'Now try entering a medium-strength password.',
+    icon: 'info',
+    confirmButtonText: 'OK',
+    confirmButtonColor: '#03cae4' // change this to your preferred color
+  }).then(() => {
+    stage = 2;
+    progressStage = 1;
+    updateProgressUI();
+    clearPasswordInput();
+  });
+}
+
+    else if (stage === 1 && s >= 45) {
+  Swal.fire({
+    title: 'Try weaker!',
+    text: 'You need to start with a weak password first.',
+    icon: 'error',
+    confirmButtonText: 'OK',
+    confirmButtonColor: '#03cae4' // red color for error
+  });
+}
+
+// Stage 2: medium password
+else if (stage === 2 && s >= 45 && s < 70) {
+  Swal.fire({
+    title: 'Next Step!',
+    text: 'Now try entering a strong password.',
+    icon: 'info',
+    confirmButtonText: 'OK',
+    confirmButtonColor: '#03cae4' // blue color for info
+  }).then(() => {
+    stage = 3;
+    progressStage = 2;
+    updateProgressUI();
+    clearPasswordInput();
+  });
+}
+   else if (stage === 2 && s >= 70) {
+  // warning for entering a strong password too early
+  Swal.fire({
+    title: '⚠️ Too Strong!',
+    text: 'You’re supposed to enter a medium password first, not a strong one.',
+    icon: 'warning',
+    confirmButtonText: 'OK',
+    confirmButtonColor: '#03cae4' // yellow for warning
+  });
+}
+else if (stage === 2 && s < 45) {
+  Swal.fire({
+    title: 'Too weak!',
+    text: 'You’re supposed to enter a medium-strength password now.',
+    icon: 'error',
+    confirmButtonText: 'OK',
+    confirmButtonColor: '#03cae4' // red for error
+  });
+}
+
+
+    // Stage 3: strong password
+    else if (stage === 3 && s >= 70) {
+      progressStage = 3;
+      updateProgressUI();
+      clearPasswordInput();
+      Swal.fire({
+        title: '🎉 Simulation Complete!',
+        html: `<p>Great job! You've learned how password strength affects security.</p>`,
+        icon: 'success',
+        showCancelButton: true,
+        confirmButtonText: 'Start Quiz',
+        confirmButtonColor: '#03cae4',
+        cancelButtonText: 'Later',
+        allowOutsideClick: false
+      }).then(result => {
+        if (result.isConfirmed) openQuizIfAllowed();
+      });
+    }
+    else if (stage === 3 && s < 70) {
+      Swal.fire('Not strong enough!', 'Try a strong password to finish this stage.', 'error');
+    }
+  });
+  // NEW: Reset Stage button logic
+const resetStageBtn = document.getElementById('resetStageBtn');
+
+resetStageBtn.addEventListener('click', () => {
+  if (progressStage === 0) {
+    Swal.fire(
+      'Notice',
+      'You are still at the first stage. There is nothing to reset.',
+      'info'
+    )
+    return
+  }
+
+  Swal.fire({
+    title: 'Reset this stage?',
+    text: 'You will repeat the previous completed step only.',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Yes, reset stage',
+    confirmButtonColor: '#03cae4',
+    cancelButtonText: 'Cancel'
+  }).then(result => {
+    if (!result.isConfirmed) return
+
+    // Move one step back in completed count
+    progressStage = Math.max(0, progressStage - 1)
+
+    // Set the active stage to the next one the user should attempt
+    stage = Math.min(3, progressStage + 1)
+
+    updateProgressUI()
+    clearPasswordInput()
+
+    Swal.fire({
+  title: 'Stage reset',
+  text: 'You can try this stage again.',
+  icon: 'success',
+  confirmButtonText: 'OK',
+  confirmButtonColor: '#03cae4' // green for success
+});
+
+  })
+})
+resetBtn.addEventListener('click', () => {
+  if (progressStage === 0) {
+    Swal.fire(
+      'Notice',
+      'You are still at 0/3. There is nothing to reset yet.',
+      'info'
+    )
+    return
+  }
+
+  Swal.fire({
+    title: 'Reset simulation?',
+    text: 'This will restart your progress from 0/3. Do you want to continue?',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Yes, reset all',
+    confirmButtonColor: '#03cae4',
+    cancelButtonText: 'Cancel'
+  }).then(result => {
+    if (result.isConfirmed) {
+      progressStage = 0;
+      stage = 1;
+      localStorage.removeItem('passwordProgress');
+      localStorage.removeItem('passwordStage');
+      updateProgressUI();
+      clearPasswordInput();
+      outText.textContent = 'Try entering your first (weak) password on the right.';
+      updateTips();
+      Swal.fire({
+  title: 'Simulation reset',
+  text: 'Progress has been cleared. Start again from stage 1.',
+  icon: 'success',
+  confirmButtonText: 'OK',
+  confirmButtonColor: '#03cae4' // green for success
+});
+
+    }
+  })
+})
+/* ---------- STORAGE KEYS ---------- */
+const STORAGE_KEY = 'weak_sim_state_v1';
+const QUIZ_PROGRESS_KEY = 'quiz_progress_v1';
+let quizAttempts = 0;
+let lockUntil = 0;
+let cooldownInterval = null;
+
+/* ---------- HELPER FUNCTIONS ---------- */
+function persistState() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({ quizAttempts, lockUntil }));
+}
+
+function loadState() {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (!raw) return;
+  const state = JSON.parse(raw);
+  quizAttempts = state.quizAttempts || 0;
+  lockUntil = state.lockUntil || 0;
+}
+
+function collectCurrentQuizSelections() {
+  const answers = {};
+  for (let i = 1; i <= 10; i++) {
+    const sel = document.querySelector(`input[name="q${i}"]:checked`);
+    if (sel) answers[`q${i}`] = sel.value;
+  }
+  return answers;
+}
+
+function restoreQuizProgress() {
+  const saved = localStorage.getItem(QUIZ_PROGRESS_KEY);
+  if (!saved) return;
+  const answers = JSON.parse(saved);
+  for (const [q, val] of Object.entries(answers)) {
+    const el = document.querySelector(`input[name="${q}"][value="${val}"]`);
+    if (el) el.checked = true;
+  }
+}
+
+/* ---------- OPEN QUIZ ---------- */
+function openQuizIfAllowed() {
+  loadState();
+  const now = Date.now();
+  if (now < lockUntil) {
+    let remaining = Math.ceil((lockUntil - now) / 1000);
+    Swal.fire({
+      title: '⏳ Please Wait',
+      html: `You must wait <b id="cooldownTime">${remaining}</b> second(s) before retrying the quiz.`,
+      icon: 'info',
+      allowOutsideClick: false,
+      showConfirmButton: false,
+      didOpen: () => {
+        const timeEl = Swal.getHtmlContainer().querySelector('#cooldownTime');
+        const timerInterval = setInterval(() => {
+          const nowInner = Date.now();
+          remaining = Math.ceil((lockUntil - nowInner) / 1000);
+          if (remaining <= 0) {
+            clearInterval(timerInterval);
+            Swal.close();
+            lockUntil = 0;
+            persistState();
+          } else {
+            timeEl.textContent = remaining;
+          }
+        }, 1000);
+      }
+    });
+    return;
+  }
+
+  restoreQuizProgress();
+  document.getElementById('quizResult').textContent = '';
+  const quizModal = new bootstrap.Modal(document.getElementById('quizModal'), { backdrop: 'static', keyboard: false });
+  quizModal.show();
+}
+
+/* ---------- START QUIZ BUTTON ---------- */
+document.getElementById('startQuizBtn').addEventListener('click', openQuizIfAllowed);
+
+/* ---------- CLOSE QUIZ ---------- */
+document.getElementById('closeQuizBtn').addEventListener('click', () => {
+  const answers = collectCurrentQuizSelections();
+  localStorage.setItem(QUIZ_PROGRESS_KEY, JSON.stringify(answers));
+  const quizModalEl = document.getElementById('quizModal');
+  const modalInstance = bootstrap.Modal.getInstance(quizModalEl);
+  if (modalInstance) modalInstance.hide();
+  Swal.fire({ toast:true, position:'top-end', icon:'info', title:'Your progress has been saved.', timer:1800, showConfirmButton:false });
+});
+
+/* ---------- SUBMIT QUIZ ---------- */
+document.getElementById('submitQuizBtn').addEventListener('click', () => {
+  const correct = { q1:'a', q2:'a', q3:'a', q4:'a', q5:'a', q6:'a', q7:'a', q8:'a', q9:'a', q10:'a' };
+  let score = 0;
+  let unanswered = 0;
+  for (let q in correct) {
+    const checked = document.querySelector(`input[name="${q}"]:checked`);
+    if (!checked) { unanswered++; continue; }
+    if (checked.value === correct[q]) score++;
+  }
+  if (unanswered > 0) {
+    Swal.fire({ icon:'info', title:'Please answer all questions', text:`You still have ${unanswered} unanswered question(s).` });
+    return;
+  }
+
+  // Clear answers after submission
+  document.querySelectorAll('input[type="radio"]:checked').forEach(r => r.checked = false);
+  localStorage.removeItem(QUIZ_PROGRESS_KEY);
+
+const passingScore = 8;
+const passed = score >= passingScore;
+
+const quizModalEl = document.getElementById('quizModal');
+const modalInstance = bootstrap.Modal.getInstance(quizModalEl);
+
+if (passed) {
+  Swal.fire({
+    icon: 'success',
+    title: '🎉 Quiz Passed!',
+    html: `
+      <p>You scored <b>${score}/10</b> — well done!</p>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-top:10px;">
+        <button id="backDashboardBtn" class="swal2-confirm swal2-styled" style="background:#03cae4;">⬅️ Return to Dashboard</button>
+        <button id="stayHereBtn" class="swal2-styled" style="background:#28a745;color:white;">🏠 Stay on this Page</button>
+      </div>
+    `,
+    showConfirmButton: false,
+    allowOutsideClick: false,
+    didOpen: () => {
+      const container = Swal.getHtmlContainer();
+      const moduleKey = 'weakpw'; // ✅ key for Weak Password module
+      const DASH_KEY = 'learning_module_state';
+      const raw = localStorage.getItem(DASH_KEY);
+      const dashState = raw ? JSON.parse(raw) : {};
+
+      // ✅ Mark Weak Password module as completed
+      if (!dashState[moduleKey]) {
+        dashState[moduleKey] = { completed: [], simulationDone: false };
+      }
+      dashState[moduleKey].simulationDone = true;
+      if (!dashState[moduleKey].completed.includes('quiz')) {
+        dashState[moduleKey].completed.push('quiz');
+      }
+      localStorage.setItem(DASH_KEY, JSON.stringify(dashState));
+
+      // ✅ Notify other tabs or dashboard to update instantly
+      if (window.BroadcastChannel) {
+        const bc = new BroadcastChannel('learning_module_channel');
+        bc.postMessage({ type: 'module_quiz_done', module: moduleKey, progress: 100 });
+        bc.close();
+      }
+
+      // ✅ Reset quiz tracking and state
+      quizAttempts = 0;
+      lockUntil = 0;
+      persistState();
+
+      // ✅ “Return to Dashboard” button
+      container.querySelector('#backDashboardBtn').addEventListener('click', () => {
+        Swal.fire({
+          title: 'Returning to Dashboard...',
+          icon: 'success',
+          showConfirmButton: false,
+          timer: 1200,
+          timerProgressBar: true,
+          willClose: () => {
+            if (modalInstance) modalInstance.hide();
+            window.location.href = 'dashboard.html';
+          }
+        });
+      });
+
+      // ✅ “Stay Here” button
+      container.querySelector('#stayHereBtn').addEventListener('click', () => {
+        Swal.close();
+        if (modalInstance) modalInstance.hide();
+
+        // Broadcast full progress update
+        if (window.BroadcastChannel) {
+          const bc = new BroadcastChannel('learning_module_channel');
+          bc.postMessage({ type: 'module_progress_full', module: moduleKey, progress: 100 });
+          bc.close();
+        }
+
+        Swal.fire({
+          toast: true,
+          position: 'top-end',
+          icon: 'success',
+          title: '✅ Weak Password quiz completed — progress updated to 100%',
+          showConfirmButton: false,
+          timer: 2000
+        });
+      });
+    }
+  });
+} else {
+  // ❌ Failed logic
+  quizAttempts++;
+  const baseCooldown = 15;
+  const lockSeconds = baseCooldown * quizAttempts;
+  lockUntil = Date.now() + lockSeconds * 1000;
+  persistState();
+
+  Swal.fire({
+    icon: 'error',
+    title: '❌ Quiz Failed',
+    html: `
+      <p>Your score: <b>${score}/10</b></p>
+      <p>Minimum to pass: ${passingScore}</p>
+      <p>Please wait <b>${lockSeconds}s</b> before retrying.</p>
+    `,
+    allowOutsideClick: false
+  }).then(() => {
+    if (modalInstance) modalInstance.hide();
+  });
+
+  startCooldownCountdown(lockSeconds, document.getElementById('submitQuizBtn'));
+}
+});
+
+/* ---------- COOLDOWN COUNTDOWN ---------- */
+function startCooldownCountdown(seconds, button) {
+  if (cooldownInterval) clearInterval(cooldownInterval);
+  const end = Date.now() + seconds*1000;
+  button.disabled = true;
+  cooldownInterval = setInterval(() => {
+    const remain = Math.max(0, Math.ceil((end - Date.now())/1000));
+    button.textContent = `Retry available in ${remain}s`;
+    if (remain <= 0) {
+      clearInterval(cooldownInterval);
+      cooldownInterval = null;
+      button.disabled = false;
+      button.textContent = 'Submit Quiz';
+      Swal.fire({ toast:true, position:'top-end', icon:'success', title:'✅ You can now retry the quiz', showConfirmButton:false, timer:2000 });
+    }
+  }, 1000);
+}
+
+/* ---------- INITIALIZE ON LOAD ---------- */
+window.addEventListener('load', () => {
+  loadState();
+  if (lockUntil && Date.now() < lockUntil) {
+    const remaining = Math.ceil((lockUntil - Date.now())/1000);
+    startCooldownCountdown(remaining, document.getElementById('submitQuizBtn'));
+  }
+});
+
+  updateTips();
+</script>
+</body>
+</html>

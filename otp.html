@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Verify OTP — NetAware</title>
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      overflow-x: hidden;
+      overflow-y: auto;
+      font-family: Arial, sans-serif;
+      background: #f5f7f7;
+    }
+
+    body.swal2-shown {
+      overflow-y: auto !important;
+      padding-right: 0 !important;
+    }
+
+    .wrapper {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .verifybtn{
+      background-color: #03cae4;
+    }
+
+    .card {
+      width: 420px;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 6px 18px rgba(0,0,0,.08);
+      padding: 24px;
+      text-align: center;
+    }
+
+    h1 {
+      margin: 0 0 8px 0;
+      font-size: 20px;
+      color: #202124;
+    }
+
+    p {
+      color: #5f6368;
+      margin-top: 0;
+    }
+
+    .otp-box {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin: 18px 0 10px;
+    }
+
+    .otp-box input {
+      width: 44px;
+      height: 52px;
+      font-size: 20px;
+      text-align: center;
+      border: 1px solid #dfe1e6;
+      border-radius: 6px;
+    }
+
+    button {
+      background: #1a73e8;
+      color: #fff;
+      border: none;
+      padding: 12px 18px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .hint {
+      color: #8a8f98;
+      margin-top: 12px;
+      font-size: 13px;
+    }
+
+    .small {
+      font-size: 12px;
+      color: #8a8f98;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="card">
+      <h1>Enter the OTP</h1>
+      <p>We've sent a one-time code to +63 ••• ••• •1234</p>
+
+      <div class="otp-box" id="otpBox">
+        <input maxlength="1" inputmode="numeric" pattern="[0-9]*" />
+        <input maxlength="1" inputmode="numeric" pattern="[0-9]*" />
+        <input maxlength="1" inputmode="numeric" pattern="[0-9]*" />
+        <input maxlength="1" inputmode="numeric" pattern="[0-9]*" />
+        <input maxlength="1" inputmode="numeric" pattern="[0-9]*" />
+        <input maxlength="1" inputmode="numeric" pattern="[0-9]*" />
+      </div>
+
+      <button id="verifyBtn"class="verifybtn">Verify</button>
+
+      <div class="hint">Example OTP for demo: <b>Any 6 digits</b></div>
+      <div class="small">This is a simulated OTP screen for training purposes.</div>
+    </div>
+  </div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+  const inputs = Array.from(document.querySelectorAll('#otpBox input'));
+  inputs.forEach((inp, i) => {
+    inp.addEventListener('input', e => {
+      e.target.value = e.target.value.replace(/[^0-9]/g, '');
+      if (e.target.value.length === 1 && i < inputs.length - 1) inputs[i + 1].focus();
+    });
+
+    inp.addEventListener('keydown', e => {
+      if (e.key === 'Backspace' && !e.target.value && i > 0) inputs[i - 1].focus();
+    });
+  });
+
+  document.getElementById('verifyBtn').addEventListener('click', () => {
+    const code = inputs.map(i => i.value || '').join('');
+
+    if (code.length < 6) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Incomplete OTP',
+        text: 'Please enter all 6 digits before verifying.'
+      });
+      return;
+    }
+
+    localStorage.setItem('netaware_demo_verified', 'true');
+    localStorage.setItem('phish_expected_return', '1');
+    localStorage.setItem('phish_return_time', Date.now().toString());
+    localStorage.setItem('phishProgress', '1');
+    localStorage.setItem('phish_otp_done', '1');
+    localStorage.setItem('phish_spam_count', '99');
+
+    Swal.fire({
+  icon: 'success',
+  title: 'Verification Successful',
+  text: 'Your OTP has been verified. Returning to your inbox...',
+  confirmButtonText: 'OK',
+  confirmButtonColor: '#03cae4' // change this to your preferred color
+}).then(() => {
+  const spamCount = 99;
+  window.location.href = `phishatk.html?spam=${spamCount}`;
+});
+  });
+
+  window.addEventListener('load', () => {
+    const overlay = document.createElement('div');
+    overlay.style.position = 'fixed';
+    overlay.style.top = 0;
+    overlay.style.left = 0;
+    overlay.style.width = '100%';
+    overlay.style.height = '100%';
+    overlay.style.background = 'rgba(0,0,0,0.5)';
+    overlay.style.zIndex = '999';
+    overlay.style.display = 'flex';
+    overlay.style.alignItems = 'center';
+    overlay.style.justifyContent = 'center';
+
+    const tooltip = document.createElement('div');
+    tooltip.innerHTML = `
+      <div style="
+        background:#fff;
+        padding:18px 24px;
+        border-radius:10px;
+        max-width:340px;
+        text-align:center;
+        box-shadow:0 4px 14px rgba(0,0,0,0.2);
+        font-family:Arial, sans-serif;">
+        <h3 style="margin:0 0 8px 0;font-size:18px;">OTP Verification</h3>
+        <p style="font-size:14px;color:#333;margin:0 0 12px 0;">
+          You are now redirected to the OTP page. Try typing any 6-digit OTP then click Verify.
+        </p>
+        <button id="tooltipOk" style="
+          background:#03cae4;
+          color:#white;
+          border:none;
+          padding:8px 16px;
+          border-radius:6px;
+          font-weight:600;
+          cursor:pointer;">OK</button>
+      </div>`;
+    overlay.appendChild(tooltip);
+    document.body.appendChild(overlay);
+
+    document.getElementById('tooltipOk').addEventListener('click', () => {
+      overlay.remove();
+    });
+  });
+</script>
+</body>
+</html>

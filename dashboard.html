@@ -1,0 +1,1670 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>NetAware</title>
+  <link rel="icon" type="image/png" href="photos/headerlogo.png">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root { --accent-1:#03cae4; --accent-2:#90d5ff; --muted:#51606a; --radius:12px; }
+    html,body{height:100%;font-family:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,Arial;color:var(--muted);background:linear-gradient(180deg,#f6fbff,#eef9ff);margin:0;}
+    .container-fluid{padding:26px;}
+    .sidebar{padding:28px 20px;background:linear-gradient(180deg,rgba(255,255,255,0.9),rgba(255,255,255,0.95));border-radius:var(--radius);height:100%;box-shadow:0 12px 40px rgba(3,202,228,0.06);border:1px solid rgba(3,202,228,0.06);display:flex;flex-direction:column;}
+    .logo-placeholder{display:flex;align-items:center;gap:14px;margin-bottom:18px;}
+    .logo-box{width:72px;height:72px;border-radius:14px;background:linear-gradient(135deg,var(--accent-1),var(--accent-2));display:flex;align-items:center;justify-content:center;color:white;font-weight:800;box-shadow:0 12px 30px rgba(3,202,228,0.12);overflow:hidden;}
+    .logo-box img{width:100%;height:100%;object-fit:contain;border-radius:12px;display:block;}
+    .brand-text{font-size:1.07rem;font-weight:800;color:#043744;}
+    .brand-sub{font-size:0.82rem;color:var(--muted);margin-top:4px;}
+    .vuln-card{margin-top:12px;padding:14px;border-radius:10px;background:linear-gradient(180deg,#fff,#fbfeff);border:1px solid rgba(3,202,228,0.06);box-shadow:0 10px 30px rgba(3,202,228,0.03);display:flex;align-items:center;justify-content:space-between;cursor:pointer;transition:all 0.2s ease;}
+    .vuln-card:hover{background:linear-gradient(180deg,#e7faff,#ffffff);transform:translateY(-2px);}
+    .vuln-left{display:flex;align-items:center;gap:12px;min-width:0;flex:1}
+    .vuln-card p{margin:0;font-weight:700;color:#0b4660;font-size:0.95rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .content{padding-left:22px;}
+    .content h4{font-weight:800;color:#073444;margin-top:0;}
+    .lesson-box{margin-top:14px;padding:16px;background:#fff;border-radius:12px;border:1px solid rgba(3,202,228,0.06);box-shadow:0 12px 30px rgba(3,202,228,0.05);}
+    .lesson-box h5{font-size:1rem;color:#043744;margin:0 0 8px 0;}
+    .lesson-box p{color:#4f656c;margin:0 0 10px 0;line-height:1.45;}
+    .btn-next, .btn-secondaryy, .btn-smi{background:linear-gradient(90deg,var(--accent-1),var(--accent-2));color:white;border:none;border-radius:10px;padding:8px 16px;margin-top:12px;}
+    .btn-next:disabled{opacity:0.5;}
+    .simulation-box{margin-top:20px;background:linear-gradient(90deg,#fff,#fbfeff);border-radius:12px;padding:14px;border:1px solid rgba(3,202,228,0.06);box-shadow:0 14px 36px rgba(3,202,228,0.06);display:flex;align-items:center;justify-content:space-between;gap:12px;}
+    .simulation-box input{flex:1;border-radius:12px;border:1px solid rgba(3,202,228,0.12);background:linear-gradient(180deg,#fff,#f7fdff);box-shadow:inset 0 2px 10px rgba(3,202,228,0.02);padding:8px;}
+    .btn-sim{background:linear-gradient(90deg,var(--accent-1),var(--accent-2));color:white;padding:8px 14px;border-radius:10px;border:none;box-shadow:0 10px 30px rgba(3,202,228,0.10);}
+    .btn-sim:disabled{opacity:0.5;cursor:not-allowed;}
+    @media (max-width:991px)
+    {
+      
+      .sidebar{margin-bottom:18px}.logo-box{width:64px;height:64px}
+    }
+    .filter-btn.active {
+      box-shadow: 0 0 0 2px rgba(3,202,228,0.3);
+      font-weight: 600;
+    }
+/* Hover effect for simulation button */
+.btn-smi:hover {
+  background: linear-gradient(90deg, var(--accent-2), var(--accent-1));
+  box-shadow: 0 12px 36px rgba(3,202,228,0.25);
+  transform: translateY(-2px);
+  transition: all 0.2s ease;
+}
+
+    /* Progress UI styles */
+   /* Circular progress styles */
+.vuln-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: center;
+}
+
+.circle-wrap {
+  width: 48px;
+  height: 48px;
+  position: relative;
+  display: inline-block;
+}
+
+.circle-bg {
+  fill: none;
+  stroke: rgba(3,202,228,0.12);
+  stroke-width: 5;
+}
+
+.circle-progress {
+  fill: none;
+  stroke-width: 5;
+  stroke-linecap: round;
+  transform: rotate(-90deg);
+  transform-origin: 50% 50%;
+  transition: stroke-dashoffset 0.8s ease;
+}
+
+.progress-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #04474f;
+}
+
+
+    /* larger, responsive lesson images */
+.lesson-image {
+  width: 70%;
+  max-width: 500px;    /* maximum width for large screens — change to taste */
+  height: auto;
+  display: block;
+  margin: 15px auto;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(3,202,228,0.06);
+  object-fit: contain;
+}
+
+/* optional: slightly larger caption text */
+.lesson-box p.caption {
+  font-size: 0.95em;
+  font-style: italic;
+  text-align: center;
+  color: #4b6368;
+  margin-top: 8px;
+}
+/* make the left dashboard sticky and scrollable */
+.sidebar{
+  position: sticky;
+  top: 26px;                          /* space from top (matches .container-fluid padding) */
+  height: calc(100vh - 52px);         /* viewport height minus top+bottom gaps */
+  overflow: auto;                     /* allow inner scrolling if content is long */
+  padding: 28px 20px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,255,255,0.95));
+  border-radius: var(--radius);
+  box-shadow: 0 12px 40px rgba(3,202,228,0.06);
+  border: 1px solid rgba(3,202,228,0.06);
+  display:flex;
+  flex-direction:column;
+  /* keep any previous styles you already had here */
+}
+
+/* On narrow screens revert to normal flow (not sticky) */
+@media (max-width: 991px) {
+  .sidebar {
+    position: static;
+    height: auto;
+    overflow: visible;
+    margin-bottom: 18px;
+  }
+}
+
+.example-box img {
+  max-width: 100%;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+.example-box p {
+  margin-bottom: 8px;
+}
+
+  </style>
+</head>
+<body>
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-md-3 sidebar">
+        <div class="logo-placeholder">
+          <div class="logo-box"><img src="netaware-logo.png" alt="Logo"></div>
+          <div>
+            <div class="brand-text">NetAware</div>
+            <div class="brand-sub">Security Learning Lab</div>
+          </div>
+        </div>
+
+        <!-- Difficulty Filter -->
+         <div class="difficulty-filter mb-3 d-flex gap-2"> <button class="btn btn-sm btn-primary filter-btn" data-diff="Beginner">Beginner</button> <button class="btn btn-sm btn-secondary filter-btn" data-diff="Intermediate">Intermediate</button> <button class="btn btn-sm btn-danger filter-btn" data-diff="Advanced">Advanced</button> <button class="btn btn-sm btn-outline-secondary filter-btn active" data-diff="All">All</button> </div>
+        <!-- modules (circular progress UI added to each card) -->
+<div class="vuln-card" data-module="phishing" data-diff="Beginner">
+  <div class="vuln-left">
+    <p>Phishing Attacks <span class="badge bg-primary ms-2">Beginner</span></p>
+  </div>
+  <div class="vuln-meta" aria-hidden="true">
+    <div class="circle-wrap">
+      <svg viewBox="0 0 36 36">
+        <defs>
+          <linearGradient id="grad-phishing" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#03cae4"/>
+            <stop offset="100%" stop-color="#90d5ff"/>
+          </linearGradient>
+        </defs>
+        <circle class="circle-bg" cx="18" cy="18" r="15.915"/>
+        <circle class="circle-progress" cx="18" cy="18" r="15.915" stroke="url(#grad-phishing)"/>
+      </svg>
+      <div class="progress-text">0%</div>
+    </div>
+  </div>
+</div>
+
+<div class="vuln-card" data-module="adattack" data-diff="Beginner">
+  <div class="vuln-left">
+    <p>Fake Antivirus Alert<span class="badge bg-primary ms-2">Beginner</span></p>
+  </div>
+  <div class="vuln-meta" aria-hidden="true">
+    <div class="circle-wrap">
+      <svg viewBox="0 0 36 36">
+        <defs>
+          <linearGradient id="grad-adattack" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#03cae4"/>
+            <stop offset="100%" stop-color="#90d5ff"/>
+          </linearGradient>
+        </defs>
+        <circle class="circle-bg" cx="18" cy="18" r="15.915"/>
+        <circle class="circle-progress" cx="18" cy="18" r="15.915" stroke="url(#grad-adattack)"/>
+      </svg>
+      <div class="progress-text">0%</div>
+    </div>
+  </div>
+</div>
+
+<div class="vuln-card" data-module="weakpw" data-diff="Beginner">
+  <div class="vuln-left">
+    <p>Weak Passwords <span class="badge bg-primary ms-2">Beginner</span></p>
+  </div>
+  <div class="vuln-meta" aria-hidden="true">
+    <div class="circle-wrap">
+      <svg viewBox="0 0 36 36">
+        <defs>
+          <linearGradient id="grad-weakpw" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#03cae4"/>
+            <stop offset="100%" stop-color="#90d5ff"/>
+          </linearGradient>
+        </defs>
+        <circle class="circle-bg" cx="18" cy="18" r="15.915"/>
+        <circle class="circle-progress" cx="18" cy="18" r="15.915" stroke="url(#grad-weakpw)"/>
+      </svg>
+      <div class="progress-text">0%</div>
+    </div>
+  </div>
+</div>
+
+<div class="vuln-card" data-module="bruteforce" data-diff="Intermediate">
+  <div class="vuln-left">
+    <p>Bruteforce Attacks <span class="badge bg-secondary ms-2">Intermediate</span></p>
+  </div>
+  <div class="vuln-meta" aria-hidden="true">
+    <div class="circle-wrap">
+      <svg viewBox="0 0 36 36">
+        <defs>
+          <linearGradient id="grad-bruteforce" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#03cae4"/>
+            <stop offset="100%" stop-color="#90d5ff"/>
+          </linearGradient>
+        </defs>
+        <circle class="circle-bg" cx="18" cy="18" r="15.915"/>
+        <circle class="circle-progress" cx="18" cy="18" r="15.915" stroke="url(#grad-bruteforce)"/>
+      </svg>
+      <div class="progress-text">0%</div>
+    </div>
+  </div>
+</div>
+
+<div class="vuln-card" data-module="xss" data-diff="Advanced">
+  <div class="vuln-left">
+    <p>Cross-Site Scripting <span class="badge bg-danger ms-2">Advanced</span></p>
+  </div>
+  <div class="vuln-meta" aria-hidden="true">
+    <div class="circle-wrap">
+      <svg viewBox="0 0 36 36">
+        <defs>
+          <linearGradient id="grad-xss" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#03cae4"/>
+            <stop offset="100%" stop-color="#90d5ff"/>
+          </linearGradient>
+        </defs>
+        <circle class="circle-bg" cx="18" cy="18" r="15.915"/>
+        <circle class="circle-progress" cx="18" cy="18" r="15.915" stroke="url(#grad-xss)"/>
+      </svg>
+      <div class="progress-text">0%</div>
+    </div>
+  </div>
+</div>
+
+<div class="vuln-card" data-module="sql" data-diff="Advanced">
+  <div class="vuln-left">
+    <p>SQL Injection <span class="badge bg-danger ms-2">Advanced</span></p>
+  </div>
+  <div class="vuln-meta" aria-hidden="true">
+    <div class="circle-wrap">
+      <svg viewBox="0 0 36 36">
+        <defs>
+          <linearGradient id="grad-sql" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#03cae4"/>
+            <stop offset="100%" stop-color="#90d5ff"/>
+          </linearGradient>
+        </defs>
+        <circle class="circle-bg" cx="18" cy="18" r="15.915"/>
+        <circle class="circle-progress" cx="18" cy="18" r="15.915" stroke="url(#grad-sql)"/>
+      </svg>
+      <div class="progress-text">0%</div>
+    </div>
+  </div>
+</div>
+</div>
+
+     <div class="col-md-9 content" id="moduleContent" aria-live="polite">
+      <h4 class="content text-center fw-bold">Welcome to NetAware</h4>
+  <p class ="text-center">Select a module from the left to begin the lessons.</p>
+  <img src="photos/welcome.png" 
+     alt="Welcome Image" 
+     style="display:block; margin:0 auto 15px; width:75%; height:auto;">
+
+  
+</div>
+
+
+    </div>
+  </div>
+
+<script>
+// 🧩 Full module data with friendly examples and visuals
+
+// I added "progress" fields here (0-100) so the cards read their values from the same source.
+
+document.addEventListener("DOMContentLoaded", () => {
+  document.querySelectorAll(".vuln-card").forEach(card => {
+    const moduleKey = card.dataset.module;
+    const progress = moduleData[moduleKey]?.progress || 0;
+
+    const circle = card.querySelector(".circle-progress");
+    const text = card.querySelector(".progress-text");
+
+    const radius = 15.915;
+    const circumference = 2 * Math.PI * radius;
+    circle.style.strokeDasharray = `${circumference} ${circumference}`;
+    circle.style.strokeDashoffset = circumference;
+
+    const offset = circumference - (progress / 100) * circumference;
+    circle.style.strokeDashoffset = offset;
+    text.textContent = `${progress}%`;
+
+    if (progress >= 80) card.querySelector(".circle-wrap").classList.add("glow");
+  });
+});
+
+const moduleData = {
+  sql: {
+    title: "SQL Injection",
+    progress: 5,
+    lessons: [
+      {
+        title: "Lesson 1 — What is SQL Injection?",
+        p1: "Imagine a shop where you ask the clerk for something. If the clerk trusts every note you hand them, a sneaky person could hand a note that says “Give me everything in the safe” instead of a normal request.",
+        p2: "SQL injection is like that sneaky note: someone types special text that the website mistakes for a real instruction. That can let them see or change things they shouldn’t, like other people’s orders or contact details.",
+        bullets: [
+          "It happens when a website trusts text it gets from a person.",
+          "The attacker’s text becomes an instruction the site follows.",
+          "Result: private info shown, or things accidentally deleted/changed.",
+          "SQL (Structured Query Language) is a way to talk to databases, which are like digital filing cabinets storing information. You can use it to find, add, change, or delete data, like asking a librarian to show books, add new ones, update details, or remove them (OWASP Foundation, n.d.). Essentially, SQL helps you manage and organize information quickly and accurately."
+        ],
+        img: "photos/img_1.png",
+        imgAlt: "Clerk",
+        imgCaption: "A simple request can become a dangerous instruction if the clerk (the website) doesn't check it. <br>OpenAI. (2025). Image generated using ChatGPT based on user prompt.",
+        question: "True or False: SQL injection can let an attacker view, change, or delete data stored in the database.",
+        answer: ["True"],
+        references: [
+            "OWASP Foundation. (n.d.). SQL Injection. OWASP. https://owasp.org/www-community/attacks/SQL_Injection",
+
+        ]
+      },
+      {
+        title: "Lesson 2 — How it works (very simply)",
+        p1: "Think of the website’s database as a locked filing cabinet. When you type something, the site asks the cabinet for certain files. If the site just pastes your words into the cabinet’s request, an attacker can sneak extra instructions in.",
+        p2: "That extra instruction might say 'show everything' or 'delete this folder', which the cabinet will do if the request wasn’t checked.",
+        bullets: [
+          "According to Radware (n.d.)",
+          "Normal flow: you ask, site asks the database, database returns safe results.",
+          "With injection: your text changes the database question itself.",
+          "The mistake is trusting user text instead of treating it like plain data."
+        ],
+        analogy: "It’s like tucking a cheat-sheet into a letter so the mailroom worker does something different than you asked.",
+        img: "photos/illustration-lesson2-cabinet.png",
+        imgAlt: "Filing cabinet with a hidden note slipping into a request",
+        imgCaption: "Hidden instructions can change what the database does. <br> OpenAI. (2025). Image generated using ChatGPT based on user prompt.",
+        question: "The main mistake the website makes when an injection succeeds is trusting ____ input",
+        answer: ["user"],
+        references: [
+            "Radware. (n.d.). SQL Injection: Examples, real life attacks & 9 defensive measures. https://www.radware.com/cyberpedia/application-security/sql-injection/",
+        ]
+      },
+      
+      {
+        title: "Lesson 3 — How websites protect themselves (non-technical)",
+        p1: "Good sites treat typed text like a sealed envelope: they don’t open it and use it as the instructions. Instead they put the envelope into a safe place and only read what they expect.",
+        p2: "Some simple protections: separate data from commands, limit what the database can do, and avoid showing detailed error messages to visitors.",
+        bullets: [
+          "According to OWASP Foundation (n.d.)",
+          "Separate data from instructions (so typed text can’t be run as code).",
+          "Give the database limited powers, like a cashier who can only make change, not open the safe.",
+          "Don’t show technical error messages to users as they give attackers clues."
+        ],
+        img: "photos/illustration-lesson3-shield.png",
+        imgAlt: "Shield",
+        imgCaption: "Treat user input as data, not commands (Radware, n.d.). <br> OpenAI. (2025). Image generated using ChatGPT based on user prompt. ",
+        question: "A contact form accepts any characters and the site builds an SQL string by concatenation. What is the risk?",
+        answer: ["SQL Injection"],
+         references: [
+            "Radware. (n.d.). SQL Injection: Examples, real life attacks & 9 defensive measures. https://www.radware.com/cyberpedia/application-security/web-application-security-best-practices/",
+            "OWASP Foundation. (n.d.). SQL Injection Prevention Cheat Sheet. OWASP Cheat Sheet Series. https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html"
+          ]
+      }
+    ],
+    simDescription: "This simulation shows how a site that doesn't check inputs can be tricked into revealing hidden data. You'll see how a few words typed in the wrong place can change what the site does.",
+    quickActivity: {
+      title: "Tiny Activity — Try the Difference",
+      instructions: [
+        "1️. Think of a question you might ask a website (example: “show my orders”).",
+        "2️. Imagine adding an extra instruction to that question (example: “and show everything”).",
+        "3️. Ask yourself: would the site still only show your orders, or could it show other people’s too?",
+        "The point: sites should never let typed text change how they search for data."
+      ],
+      note: "No simulation required. This is just a thought experiment to understand the risk."
+    },
+    keyTakeaways: [
+      "Websites must not blindly trust what users type.",
+      "Simple checks and separation keep data safe.",
+      "Avoid typing secret info into untrusted sites and report odd behavior."
+    ],
+    forParentsTeachers: {
+      short: "Websites should treat what you type as input, not as instructions (Radware n.d). If a site isn’t built securely, attackers can trick it into running harmful commands from your text. Being careful where you type protects both your data and the site itself.",
+      tips: [
+        "Think before entering sensitive information on unfamiliar pages.",
+        "Report websites that behave strangely or ask for unexpected access."
+      ]
+    },
+    glossary: [
+      {term: "According to OWASP Foundation (n.d.)", def: ""}, 
+      { term: "Database", def: "A locked place where a website keeps lists and records (like orders or names)." },
+      { term: "Input", def: "Anything a user types into a form or box on a website." },
+      { term: "Exploit", def: "A trick that takes advantage of a mistake in a website." }
+    ]
+  },
+
+  phishing: {
+    title: "Phishing Attacks",
+    progress: 22,
+    lessons: [
+      {
+        title: "Lesson 1 — What is Phishing?",
+        p1: "In this lesson, you’ll learn how phishing works and simple ways to protect yourself online.",
+        p2: "According to KnowBe4 (n.d.), Phishing is when someone pretends to be someone trustworthy (like your bank or a friend) to trick you into giving sensitive information such as passwords or bank/credit card details. This often happens through emails claiming to be from popular social websites, bank messages, or fake websites that look real but are set up to steal information.",
+        bullets: [
+          "The attacker pretends to be a trusted source.",
+          "They ask for sensitive info or a quick action (click a link, download a file).",
+          "Phishing can also try to scare you so you act without thinking."
+          
+        ],
+        img: "photos/phishing_email.png",
+        imgAlt: "Cartoon phishing email with a hook",
+        imgCaption: "Messages like this try to create fear so you’ll click before thinking. <br> Source: Original image created by Francis Aves using Canva, 2025. ",
+
+        question: "What is the term for a scam where attackers pretend to be someone you trust to steal your personal information?",
+        answer: ["Phishing"],
+        references:[
+          "Phishing | KnowBe4. (n.d.). https://www.knowbe4.com/resource-center/phishing",
+        ]
+        
+      },
+      {
+        title: "Lesson 2 — Common signs of phishing",
+        p1: "According to Valimail (2025), Phishing messages often contain little clues: spelling mistakes, odd sender addresses, offers that seem too good to be true, suspicious links that don’t match the displayed text, or urgent/threatening language demanding action.",
+        p2: "If a message pressures you to act quickly or asks for passwords, that's a red flag.",
+        bullets: [
+          "Referencing Valimail (2025) again, these phishing attempts usually contain:",
+          "Suspicious attachments or links,",
+          "Requests for passwords, personal data, or money,",
+          "Or unusual or generic greetings like 'Dear customer' instead of your name."
+        ],
+        analogy: "It’s like someone knocking on your door pretending to be a delivery person, trying to trick you into giving them access to your home.",
+        img: "photos/phishing_signs.png",
+        imgAlt: "Checklist of phishing signs",
+        imgCaption: "Tip: Check the website link. “facebool.com” isn’t the same as “facebook.com”. Small changes hide big risks. <br> Source: Original image created by Francis Aves using Canva, 2025.",
+        question: "True or False: A phishing message is always easy to spot because it contains obvious spelling mistakes or generic greetings.",
+        answer: ["False"],
+        references:[
+          "What is a common indicator of a phishing attempt? - Valimail. (2025, November 6). Valimail -. https://www.valimail.com/resources/guides/guide-to-phishing/what-is-a-common-indicator-of-a-phishing-attempt/",
+        ]   
+      },
+      {
+        title: "Lesson 3 — How to protect yourself",
+        p1: "Slow down and double-check: verify the sender by checking their email address, check the link before you click, and never enter personal information after clicking a link in an email (Kaspersky, 2025)",
+        p2: "Use multi-factor authentication when available and report suspicious messages to your organization or service provider.",
+        bullets: [
+          "Verify the message request with the sender (don’t use or click the links in the message). It may be necessary to independently confirm the message was sent by a legitimate individual or organization (Cloudflare, n.d.).",
+          "Remain calm. Phishing dependes on creating a sense of urgency (Canadian Center for Cyber Security, 2025).",
+          "Protect your accounts by using multi-factor authentication and protect your data by backing them up (FTC, 2022).",
+          "For example, when Gmail sends you a 6-digit code before login, that’s called multi-factor authentication."
+        ],
+        img: "photos/phishing_protect.png",
+        imgAlt: "Person checking an email on a phone",
+        imgCaption: "Verify, don’t trust at first glance. Double-checking and verifying emails stops most phishing attempts. <br>OpenAI. (2025). Image generated using ChatGPT based on user prompt.",
+
+        question: "What security feature, often involving a code sent to your phone or email, adds an extra step to protect accounts from phishing attacks? Clue: M___-F___ A__________",
+        answer: ["Multi-Factor Authentication"],
+        references:[
+          "What is Phishing? (2025, October 6). https://www.kaspersky.com/resource-center/preemptive-safety/phishing-prevention-tips",
+          "Phishing attacks. Cloudflare. (n.d.). https://www.imperva.com/learn/application-security/phishing-attack-scam/",
+          "Don’t take the bait: Recognize and avoid phishing attacks - ITSAP.00.101 - Canadian Centre for Cyber Security. (2025, November 24). Canadian Centre for Cyber Security. https://www.cyber.gc.ca/en/guidance/dont-take-bait-recognize-and-avoid-phishing-attacks",
+          "How To Recognize and Avoid Phishing Scams. Federal Trade Commission (FTC). (2022, September). https://consumer.ftc.gov/articles/how-recognize-avoid-phishing-scams",
+        ]
+      
+      }
+    ],
+    simDescription: "A safe simulated phishing email shows how attackers use urgency and fake links. Learn to spot the signs without risking real accounts.",
+    quickActivity: {
+      title: "Tiny Activity — Spot the Fake",
+      instructions: [
+        "1️. Open an email and look at the sender address (not just the display name).",
+        "2️. Hover over any links to see where they actually lead.",
+        "3️. Ask: does the message ask for sensitive info or urgent action? If yes, be suspicious."
+      ],
+      note: "This activity helps build good email habits."
+    },
+    keyTakeaways: [
+      "Always verify unexpected requests.",
+      "Hover over links and check sender details.",
+      "Use multi-factor authentication and report suspicious messages."
+    ],
+    forParentsTeachers: {
+      short: "Every day, thousands of phishing attempts happen worldwide through emails, messages, or fake websites, and some look nearly perfect. Pausing to verify is your best defense online.",
+      tips: [
+        "Practice with examples (real vs fake messages).",
+        "Encourage a culture of double-checking messages that ask for secrets."
+      ]
+    },
+    glossary: [
+      { term: "Spoofing", def: "Making a message or address look like it came from someone else." },
+      { term: "Multi-Factor Authentication", def: "An extra step (like a code on your phone) that helps protect accounts even if a password is stolen." },
+      { term: "Attachment", def: "A file sent with an email can be safe, but sometimes contains malware." }
+    ]
+  },
+  adattack: {
+    title: "Fake Antivirus Alert (Ad Attack)",
+    progress: 8,
+    lessons: [
+      {
+        title: "Lesson 1 — What is a Fake Alert?",
+        p1: "In this lesson, you'll learn how attackers use fake alerts to trick people into installing malware.",
+        p2: "Attackers sometimes use pop-up ads or fake system warnings claiming that your computer is infected with a virus, has been hacked, or is at risk of crashing and you must download a 'fix' software immediately (Trend Micro Help Center, n.d.). Those 'antivirus' downloads are usually malware that can steal information or lock your device.",
+        bullets: [
+          "They appear as scary pop-ups or banners.",
+          "They try to convince you to download or buy fake virus protection (Coppock, 2025).",
+          "Often use panic-inducing and urgent language along with flashing icons, countdown timers, or blaring sounds (Bîzgă, 2025)."
+        ],
+        img: "photos/fake_alert - Copy.png",
+        imgAlt: "Browser pop-up saying device infected",
+        imgCaption: "A fake warning tries to trigger panic so you act without thinking. <br> OpenAI. (2025). Image generated using ChatGPT based on user prompt.",
+        question: "Identify the form of fake alerts use to appear on your device and trick you into downloading malware. Clue: P__-U__",
+        answer: ["Pop-ups"],
+        references:[
+          "Pop-up ads and fake warnings: How to spot and Avoid it | Trend Micro Help Center. (n.d.). https://helpcenter.trendmicro.com/en-us/article/tmka-05037",
+          "Coppock, J. (2025, January 24). Fake viruses: How do you know if a virus alert is real? Fake Viruses: How Do You Know if a Virus Alert Is Real? https://www.avast.com/c-fake-virus-alert",
+          "Bîzgă, A. (2025, May 28). Fake Antivirus Pop-Ups vs. Real Security Alerts: How to Tell the Difference. Hot For Security. https://www.bitdefender.com/en-us/blog/hotforsecurity/fake-antivirus-pop-ups",
+        ]
+      },
+      {
+        title: "Lesson 2 — How they trick you",
+        p1: "Pop-ups can be made to look like legitimate system messages as scammers will try to mimic genuine notifications from legitimate antivirus brands by closely matching their designs and illegally using their logos (Coppock, 2025). They may even prevent you from seeing the page you're on until you click a button.",
+        p2: "Attackers rely on fear and curiosity, making you feel anxious (VeePN Blog, 2025). If you don’t know what to trust, you might follow their instructions.",
+        bullets: [
+          "Fake downloads often mimics the appearance of trusted or official-looking systems (Bîzgă, 2025).",
+          "Other sites use repeated pop-ups to stop you from closing the page.",
+          "Scare tactics push victims to act quickly."
+        ],
+        analogy: "It’s like a stranger shouting 'fire!' in a crowded room to make people run into their trap.",
+        img: "photos/fake_alert_flow.png",
+        imgAlt: "Flow: Pop-up -> Download -> Malware",
+        imgCaption: "A short click can start a chain that compromises your device. <br> Source: Original image created by Francis Aves using Canva, 2025.",
+        question: "True or False: The main goal of scareware pop-ups is to create a sense of urgency or fear so that users act without thinking.",
+        answer: ["True"],
+        references:[
+          "Coppock, J. (2025, January 24). Fake viruses: How do you know if a virus alert is real? Fake Viruses: How Do You Know if a Virus Alert Is Real? https://www.avast.com/c-fake-virus-alert",
+          "How to spot a fake virus alert and remove it | VEEPN Blog. (2025, August 11). VeePN Blog | Online Security and Privacy News. https://veepn.com/blog/fake-virus-warning-popup/",
+          "Bîzgă, A. (2025, May 28). Fake Antivirus Pop-Ups vs. Real Security Alerts: How to Tell the Difference. Hot For Security. https://www.bitdefender.com/en-us/blog/hotforsecurity/fake-antivirus-pop-ups",
+        ]
+      },
+      {
+        title: "Lesson 3 — Staying Safe (Non-Technical)",
+        p1: "According to VeePN Blog (2025), if a fake alert appears, stay calm. Keep a cool head and don't panic. Close the browser tab or window. Force-close if it won’t go away. Never click 'Download' or 'Fix now' or any buttons within the alert. If you’re worried, run a scan using your trusted antivirus software.",
+        p2: "To prevent these pop-ups in the future, keep your browser and security software up to date. Regular updates provide the latest protection for these emerging threats (Trend Micro Help Center, n.d.).",
+       bullets: [
+      "🚫 Ignore scare messages. Never call phone numbers or click buttons in pop-ups (Trend Micro Help Center, n.d.).",
+      "🧰 Use pop-up blockers. Enable them in your browser settings as they help keep fake warning messages from appearing (Joshua, 2025).",
+      "🔄 Keep security software updated. As stated earlier, regular updates give you the latest protection against these threats.",
+      "🛡️ If unsure, restart your device and run a trusted antivirus scan."
+      ],
+      tip: "💡 Real antivirus tools don’t show warnings through pop-up ads in your browser. They use your system’s built-in notifications instead.",
+      img: "photos/close_tab.png",
+      imgAlt: "User safely closing a suspicious browser pop-up alert",
+      imgCaption: "Close suspicious tabs immediately. Never follow download or call instructions from pop-ups. <br> Source: Original image created by Francis Aves using Canva, 2025.",
+      question: "What is the safest response to a pop-up claiming your device is infected? ______ the tab or browser without downloading anything.",
+      answer: "Close",
+      references:[
+        "How to spot a fake virus alert and remove it | VEEPN Blog. (2025, August 11). VeePN Blog | Online Security and Privacy News. https://veepn.com/blog/fake-virus-warning-popup/",
+        "Pop-up ads and fake warnings: How to spot and Avoid it | Trend Micro Help Center. (n.d.). https://helpcenter.trendmicro.com/en-us/article/tmka-05037",
+        "Joshua, C. (2025, January 27). How to spot and remove a fake virus alert. https://us.norton.com/blog/emerging-threats/fake-virus-alert",
+      ]
+      }     
+    ],
+    simDescription: "The simulation shows a fake antivirus pop-up and lets learners practise safe responses: close the tab, don't download, and report.",
+    quickActivity: {
+      title: "Tiny Activity — What Would You Do?",
+      instructions: [
+        "1️. Imagine a pop-up says your device is infected and offers a 'fix'.",
+        "2️. Choose the best action: (A) Click the fix (B) Close the tab (C) Call the number.",
+        "3️. Correct answer: Close the tab. It's usually a scam."
+      ],
+      note: "This builds instinctive safe responses to scary pop-ups."
+    },
+    keyTakeaways: [
+      "Don't download software from pop-ups.",
+      "Close the tab and use trusted tools if needed.",
+      "Never call numbers shown in scary ads."
+    ],
+    forParentsTeachers: {
+      short: "Fake alerts rely on fear. By staying calm and following safe steps, you stop attackers in their tracks.",
+      tips: [
+        "Practice closing tabs and identifying unfamiliar downloads.",
+        "Ensure a reliable antivirus is installed on family devices."
+      ]
+    },
+    glossary: [
+      { term: "Malware", def: "Software designed to harm your device or steal information." },
+      { term: "Pop-up blocker", def: "Browser feature that prevents many annoying or malicious pop-ups." },
+      { term: "Scareware", def: "Scam software that uses frightening messages to trick victims." }
+    ]
+  },
+
+  weakpw: {
+    title: "Weak Passwords",
+    progress: 64,
+    lessons: [
+     {
+  title: "Lesson 1 — Why Weak Passwords Are Risky",
+  p1: "A weak password is one that’s easy to guess, like '123456', 'qwerty', or even your birthday. According to NordPass (2024), '123456' remains the most common password in the world, often crackable in less than a second. Attackers use automated tools that can try thousands of these common passwords in seconds.",
+  p2: "If you reuse the same password across different accounts, one breach can unlock many of them. This technique, known as \"Credential Stuffing\" (OWASP Foundation, n.d.), relies on the fact that many users recycle their login details. That’s how a single weak password can lead to bigger problems.",
+  bullets: [
+    "🔓 Common passwords are easy to guess. Attackers start with the most popular ones like 'password123' (NordPass, 2024).",
+    "♻️ Reusing passwords spreads risk. If one site is breached, all reused accounts are at risk (OWASP Foundation, n.d.).",
+    "💡 Strong passwords don’t need to be complex; they need to be long. CISA (2024) recommends using random 'passphrases' of 4–7 unrelated words (like 'HorsePurpleHatRun') because they are easier to remember and harder to crack than short complex passwords."
+  ],
+  analogy: "Using the same weak password everywhere is like using one key for your house, car, and office. If someone copies it once, they can get into everything.",
+  img: "photos/weak_passwords.png",
+  imgAlt: "Illustration showing weak passwords like 123456 and password next to a broken padlock",
+  imgCaption: "A weak password is like a cheap lock, easy to break and unsafe for valuable accounts. <br> Source: Original image created by Francis Aves using Canva, 2025.",
+  question: "What do we call a password that’s easy to guess, like '123456' or 'password'? Clue: W___",
+  answer: "Weak",
+  references: [
+    "NordPass. (2024). Top 200 most common passwords. https://nordpass.com/most-common-passwords-list/",
+    "Credential stuffing | OWASP Foundation. (n.d.). https://owasp.org/www-community/attacks/Credential_stuffing",
+    "CISA. (n.d.). Use Strong Passwords. https://www.cisa.gov/secure-our-world/use-strong-passwords"
+  ]
+}
+,
+      {
+  title: "Lesson 2 — How to Make Stronger Passwords",
+  p1: "Strong passwords don’t have to be complicated, they just need to be long, unique, and hard to guess. Think of a passphrase made of random or personal-but-uncommon words instead of short, complex ones. Barrett (2024) states that NIST now recommends passphrases because of common practices like capitalising the first letter or adding a “1” or “!” to the end are now risky and can lead to weak password attacks.",
+  p2: "Password managers can safely create and remember strong passwords for you, so you can focus on using one unique password per account without the stress of memorizing them all.",
+  bullets: [
+    "Go for length, at least 12 characters or more (Microsoft Support, n.d.).",
+    "Use a different password for every important account to prevent 'Credential Stuffing' attacks.",
+    "Avoid common words, names, or simple patterns like 'P@ssw0rd' or '123456'.",
+    "Use a password manager to store and generate secure passwords (CISA, n.d.)."
+    ],
+  analogy: "A passphrase is like a sentence only you know. For example, 'BlueTigersDanceAtSunrise!' is far stronger than any short password.",
+  img: "photos/passphrase.jpg",
+  imgAlt: "Person storing passwords in a manager app",
+  imgCaption: "Password managers make strong, unique passwords practical and easy to manage. <br> OpenAI. (2025). Image generated using ChatGPT based on user prompt.",
+  question: "What kind of phrase is stronger than a short password?",
+  answer: ["Passphrase"],
+  references: [
+    "Barrett, E. (2024, October 2). What’s new - NIST Password Guidelines September 2024 | OneAdvanced. https://www.oneadvanced.com/resources/whats-new---nist-password-guidelines-september-2024/",
+    "CISA. (n.d.). Use Strong Passwords. https://www.cisa.gov/secure-our-world/use-strong-passwords",
+    "Microsoft Support. (n.d.). https://support.microsoft.com/en-us/windows/create-and-use-strong-passwords-c5cebb49-8c53-4f5e-2bc4-fe357ca048eb",
+  ]
+},
+    {
+  title: "Lesson 3 — Extra Protections",
+  p1: "Even strong passwords can be stolen. Multi-factor authentication (MFA) adds an extra step so that an attacker usually cannot access your account without it and is one of the best ways to protect against someone breaking into your account (Australian Cyber Security Centre (ACSC), 2022). For example, your MFA can send a code to your phone.",
+  p2: "It is important to check your account activity often for any password changes, altered settings, or new login alearts, and reset passwords if you notice anything suspicious or if a service reports a breach (Coppock, 2025).",
+  bullets: [
+    "Turn on MFA whenever offered. This is typically a code on your phone or email.",
+    "Watch for login alerts and suspicious activity. Don’t ignore unexpected notifications.",
+    "Change passwords if a service reports a breach, even if your account seems normal to help keep your account in control and prevent further damage (Coppock, 2025)."
+  ],
+  img: "photos/mfa_example.jpg",
+  imgAlt: "Phone receiving one-time code",
+  imgCaption: "MFA adds a second lock that an attacker usually can’t bypass easily. <br> OpenAI. (2025). Image generated using ChatGPT based on user prompt.",
+  analogy: "MFA is like adding a second lock to your door, even if someone steals your key (password), they can’t get in without the second lock (code or device).",
+  question: "MFA acts like a ____ lock to your accounts",
+  answer: ["second"],
+  references: [
+    "Australian Cyber Security Centre (ACSC). (2022). Protect yourself: Multi-Factor authentication. In Personal Cyber Security Series [Guide]. https://www.cyber.gov.au/protect-yourself/resources-protect-yourself/personal-cyber-security-guides/protect-yourself-multi-factor-authentication",
+    "Coppock, J. (2025, October 13). What to do after a data breach or leak: 7 steps. https://us.norton.com/blog/emerging-threats/what-to-do-after-a-data-breach",
+  ]
+}
+    ],
+    simDescription: "An interactive activity helps build strong passphrases and shows how password reuse can let attackers access multiple accounts.",
+    quickActivity: {
+      title: "Tiny Activity — Create a Passphrase",
+      instructions: [
+        "1. Pick four random words you can remember (e.g., 'mango river notebook blue').",
+        "2. Combine them into a passphrase and add extra characters if desired.",
+        "3️. Check: Is it 12+ characters and not used anywhere else?"
+      ],
+      note: "Passphrases are easy to remember and hard to guess."
+    },
+    keyTakeaways: [
+      "Use long, unique passwords for every important account.",
+      "Use a password manager and enable MFA.",
+      "Change passwords after breaches or suspicious activity."
+    ],
+    forParentsTeachers: {
+      short: "Many people reuse weak or simple passwords without realizing how easily they can be guessed or stolen.",
+      tips: [
+        "Learning to create strong, memorable passphrases and using a password manager greatly reduces the risk of account breaches. Even small changes in password habits make a big difference in your online safety."
+       
+      ]
+    },
+    glossary: [
+      { term: "Password manager", def: "A tool that stores and fills passwords for you, secured by one master password." },
+      { term: "Passphrase", def: "A sequence of words used as a password (usually long and memorable)."},
+      { term: "Reuse", def: "Using the same password across multiple sites increases risk." }
+    ]
+  },
+  bruteforce: {
+    title: "Bruteforce Attacks",
+    progress: 42,
+    lessons: [
+      {
+        title: "Lesson 1 — What is a bruteforce attack?",
+        p1: "A bruteforce attack uses trial and error to crack passwords, login credentials, and encryption keys as hackers try to guess correctly (Fortinet, n.d.). It’s like trying every key on a keyring until one opens the lock.",
+        p2: "An attacker can use lists of common username and passwords to brute force a username or password field until successful authentication (OWASP Foundation, n.d.)",
+        bullets: [
+          "Some attackers use applications and scripts as automated brute force tools to try many password combinations fast (Imperva, n.d.).",
+          "Weak or short passwords are more likely to be broken.",
+          "Rate-limiting and lockouts are often employed to slow or stop attackers (Cloudflare, n.d.)."
+        ],
+        img: "photos/bruteforce_keys.png",
+        imgAlt: "Many keys trying a lock",
+        imgCaption: "Trying thousands of keys quickly is how automated attacks work. <br> OpenAI. (2025). Image generated using ChatGPT based on user prompt.",
+        question: "Fill in the blank: Brute-force attacks are more likely to succeed against w___ passwords.",
+        answer: ["weak"],
+        references:[
+          "What is a Brute Force Attack? Definition, Types & How It Works | Fortinet. (n.d.). Fortinet. https://www.fortinet.com/resources/cyberglossary/brute-force-attack",
+          "Brute Force Attack | OWASP Foundation. (n.d.). https://owasp.org/www-community/attacks/Brute_force_attack",
+          "What is a Brute Force | Common Tools & Attack Prevention | Imperva. (n.d.). Learning Center. https://www.imperva.com/learn/application-security/brute-force-attack/",
+          "What is rate limiting? | Rate limiting and bots. Cloudflare. (n.d.). https://www.cloudflare.com/learning/bots/what-is-rate-limiting/ "
+        ]
+      },
+      {
+      title: "Lesson 2 — Why Defenses Matter",
+      p1: "Websites use built-in protections to make brute-force attacks harder. OWASP Foundation (2025) lists limiting login attempts, using captchas, or locking accounts after too many failures as ways to block bruteforce attacks.",
+      p2: "These defenses slow down or block automated tools long before they can guess the right password, protecting both users and systems.",
+      bullets: [
+        "Rate-limiting reduces the speed and number of repeated login attempts. (Tencent Cloud, 2025)",
+        "Stated in OWASP Foundation (2025) earlier, account lockouts help stop guessing after several wrong tries.",
+        "Captchas and multi-factor authentication (MFA) make automated attacks far less effective."
+      ],
+      analogy: "It’s like a door that locks itself after too many failed key attempts, keeping intruders from endlessly trying new keys.",
+      img: "photos/lockout.jpg",
+      imgAlt: "Door with lockout sign",
+      imgCaption: "Temporary lockouts help stop automated guessing attacks. <br> OpenAI. (2025). Image generated using ChatGPT based on user prompt.",
+      question: "What defense limits repeated login attempts? Clue: R___-L_______",
+      answer: ["rate-limiting"],
+      references:[
+        "Blocking Brute Force Attacks | OWASP Foundation. (n.d.). https://owasp.org/www-community/controls/Blocking_Brute_Force_Attacks",
+        "How can rate limiting be used in conjunction with user login? Tencent Cloud. (2025, December 12). https://www.tencentcloud.com/techpedia/131291"
+      ]
+      },
+      {
+    title: "Lesson 3 — How to Protect Accounts",
+    p1: "Protect your accounts by using strong, unique passwords and enabling multi-factor authentication (MFA). Using MFA is a powerful way to protect yourself and makes you 99% less likely to be hacked (CISA, n.d.). Stay alert for unusual login activity or security notifications.",
+    p2: "If you notice repeated failed login attempts, change your password immediately, check account activity logs, log out of all sessions, and verify your security settings (TechNow, n.d.). Organizations should also set rate-limits as it helps to prevent brute force attacks (Radware, n.d.) and continue monitoring for any suspicious activities.",
+    bullets: [
+      "Use strong, unique passwords and enable MFA.",
+      "Change passwords immediately if you notice failed login alerts (TechNow, n.d.).",
+      "Set rate-limits and block suspicious sources to reduce the number of login attempts or attacks (Radware, n.d.)."
+    ],
+    img: "photos/login_alerts.jpg",
+    imgAlt: "Security alert showing multiple failed logins",
+    imgCaption: "Login alerts help you respond quickly to suspicious activity. <br> OpenAI. (2025). Image generated using ChatGPT based on user prompt.",
+    question: "What is the first thing to update if you notice repeated login failures?",
+    answer: ["password"],
+    references:[
+      "Multifactor Authentication. Cybersecurity & Infrastructure Security Agency (CISA). (n.d.) https://www.cisa.gov/topics/cybersecurity-best-practices/multifactor-authentication",
+      "TechNow. (n.d.). What to do about suspicious login attempts: Step-by-Step guide to securing your account. https://tech-now.io/en/it-support-issues/security/what-to-do-about-suspicious-login-attempts-step-by-step-guide-to-securing-your-account",
+      "Radware. (n.d.). What is rate limiting and how does it work? Radware. https://www.radware.com/cyberpedia/bot-management/rate-limiting/"
+    ]
+
+      }
+    ],
+    simDescription: "Learn how multiple quick login attempts look and practice safe responses such as enabling MFA and changing passwords.",
+    quickActivity: {
+      title: "Tiny Activity — Rate the Password",
+      instructions: [
+        "1. Think of a password and test it mentally: is it short or reused?",
+        "2. If it’s short or reused, plan to replace it with a long unique passphrase.",
+        "3. Turn on MFA where available."
+      ],
+      note: "This trains you to evaluate password strength quickly."
+    },
+    keyTakeaways: [
+      "Automated guessing is fast, make passwords slow to guess.",
+      "Use MFA and watch for failed login alerts.",
+      "Organizations should implement rate-limits and lockouts."
+    ],
+    forParentsTeachers: {
+       short: "Repeated login attempts are a real risk. Learning simple protections like strong passwords and multi-factor authentication keeps your accounts safer.",
+  tips: [
+    "Use unique passwords for every account and enable MFA wherever possible.",
+    "Pay attention to unusual login alerts and take action promptly.",
+    "Consider using trusted tools or settings to limit repeated login attempts."
+  ]
+    },
+    glossary: [
+      { term: "Rate-limiting", def: "Limiting how often a user or IP can try to login in a short time." },
+      { term: "Lockout", def: "Temporarily preventing logins after many failed attempts." },
+      { term: "Captcha", def: "A test to prove a user is human, used to block bots." }
+    ]
+  },
+
+  xss: {
+    title: "Cross-Site Scripting (XSS)",
+    progress: 18,
+    lessons: [
+      {
+        title: "Lesson 1 — What is XSS?",
+p1: "Cross-site scripting (XSS) happens when a website shows text from another user without checking it. Attackers can sneak in small instructions (scripts) that run in other people’s browsers (OWASP, n.d.).",
+p2: "These scripts can steal session info (like login cookies), show fake content, or perform actions as if the user did them (OWASP, n.d.).",
+bullets: [
+  "According to OWASP (n.d.)",
+  "XSS lets attackers run code in someone else’s browser.",
+  "It can steal session info, show fake content, or change page behavior.",
+  "There are different types: reflected, stored, and DOM-based."
+],
+img: "photos/xss_concept.png",
+imgAlt: "Script tag sneaking into a webpage",
+imgCaption: "Unfiltered content can run harmful instructions in visitors’ browsers. <br> OpenAI. (2025). Image generated using ChatGPT based on user prompt.",
+question: "What can attackers inject into web pages? Clue: S_____s",
+answer: ["scripts"],
+references:[
+     "OWASP Foundation. (n.d.). Cross Site Scripting (XSS). OWASP. https://owasp.org/www-community/attacks/xss/",
+    "OWASP Foundation. (n.d.). DOM Based XSS. OWASP. https://owasp.org/www-community/attacks/DOM_Based_XSS"
+    ]
+
+      },
+      {
+        title: "Lesson 2 — How It Works (Simple View)",
+p1: "Sometimes, websites show messages or comments from other users directly on the page. If a bad actor adds sneaky instructions in their message, the browser might follow those instructions without the user realizing it. (Mozilla, 2025)",
+p2: "This can be risky in places like forums, comment sections, or anywhere users can post content, because it can affect everyone who views it.",
+bullets: [
+  "According to OWASP (n.d.)",
+  "Stored XSS: the harmful message is saved on the site and seen by many users.",
+  "Reflected XSS: the harmful message shows up only when someone triggers it, like in a search or link.",
+  "DOM XSS: the harmful instructions run because the website’s page handles user input in an unsafe way."
+],
+analogy: "Imagine someone posting a note on a community board that secretly tells everyone to do something harmful. People follow it without knowing it’s dangerous.",
+img: "photos/xss_flow.png",
+imgAlt: "Illustration showing different XSS types and how they affect users",
+imgCaption: "Different XSS types can affect users in different ways, sometimes just one person, sometimes everyone. <br> OpenAI. (2025). Image generated using ChatGPT based on user prompt.",
+question: "True or False: Malicious messages on websites can make your browser do things you didn’t intend.",
+answer: ["True"],
+
+      references:[
+    "Mozilla Contributors. (2025, December 15). Cross-site scripting (XSS). MDN Web Docs. https://developer.mozilla.org/en-US/docs/Web/Security/Attacks/XSS",
+    "OWASP Foundation. (n.d.). Cross Site Scripting (XSS). OWASP. https://owasp.org/www-community/attacks/xss/"
+  ]
+  },
+      {
+       title: "Lesson 3 — How Websites Protect Themselves (Simple View)",
+p1: "Good websites don’t blindly follow every message or comment users send (OWASP, n.d.). They treat messages like sealed envelopes, they only read what they expect, and ignore anything suspicious.",
+p2: "Websites use some simple tricks to keep users safe: separating commands from data, limiting what the database can do, and hiding technical errors that might give attackers clues (OWASP, n.d.).",
+bullets: [
+  "According to OWASP (n.d.)",
+  "Treat user input as plain data, not instructions. An example is like reading a note without acting on secret orders inside.",
+  "Give the database limited powers, just like a cashier who can give change but cannot open the safe.",
+  "Hide detailed error messages from visitors so attackers can’t learn how the site works."
+],
+analogy: "Think of a website like a bank: the teller only handles what’s allowed, ignores strange notes, and never tells strangers how the safe works. Sanitization is a great way for websites to ensure safety because it removes harmful scripts and keeps user input clean (OWASP, n.d.).",
+img: "photos/lesson-3xss.png",
+imgAlt: "Shield protecting a computer screen",
+imgCaption: "Treat user messages as data, not instructions, to keep the website safe. <br> OpenAI. (2025). Image generated using ChatGPT based on user prompt.",
+question: "S__________n describes the practice of treating user input as plain data and not executable instructions.",
+answer: ["sanitization"],
+references:[
+"OWASP Foundation. (n.d.). Cross Site Scripting Prevention Cheat Sheet. OWASP Cheat Sheet Series. https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html",
+"OWASP Foundation. (n.d.). Cross Site Scripting (XSS). OWASP. https://owasp.org/www-community/attacks/xss/"
+]
+      },
+    ],
+    simDescription: "See a safe demo of how unfiltered content can run in another user's browser and practise how sites and users can react.",
+    quickActivity: {
+      title: "Tiny Activity — What Could Go Wrong?",
+      instructions: [
+        "1️. Picture a comment box that shows messages to everyone.",
+        "2️. Imagine an attacker adds a small script. What could that script do?",
+        "3️. Consider how making the site treat messages as plain text would stop it."
+      ],
+      note: "This builds intuition for why unfiltered content is dangerous."
+    },
+    keyTakeaways: [
+      "According to Mozilla (2025) and OWASP (n.d.)",
+      "User content must be treated as text, not code.",
+      "Content Security Policyand escaping are powerful protections.",
+      "Keep browsers updated and avoid trusting pasted scripts."
+    ],
+    forParentsTeachers: {
+       short: "Even simple messages can hide harmful instructions. Websites that handle user content safely protect everyone’s information.",
+  tips: [
+    "Show how websites can safely check and display messages without letting harmful content run.",
+    "Encourage users to report unusual or suspicious behavior online."
+      ]
+    },
+    glossary: [
+      { term: "Sanitize", def: "Remove or change dangerous parts of user input so it’s safe to display (Mozilla, 2025)." },
+      { term: "CSP (Content Security Policy)", def: "A website setting that restricts what scripts and resources a page can load (Mozilla, 2025)." },
+      { term: "DOM", def: "The structure of a web page the browser uses. Some XSS attacks target code that changes the DOM (OWASP, n.d.)." }
+    ]
+  }
+};
+// Simple module lesson loader
+function loadModule(moduleKey) {
+  const mod = moduleData[moduleKey];
+  const content = document.getElementById("moduleContent");
+  let currentLesson = 0;
+
+  function renderLesson() {
+    const lesson = mod.lessons[currentLesson];
+    content.innerHTML = `
+      <div class="lesson-box">
+        <h5>${lesson.title}</h5>
+        <p>${lesson.p1}</p>
+        <p>${lesson.p2}</p>
+        <ul>${lesson.bullets.map(b => `<li>${b}</li>`).join("")}</ul>
+        <img src="${lesson.img}" alt="${lesson.imgAlt}" class="lesson-image">
+        <p class="caption">${lesson.imgCaption}</p>
+
+        <!-- Question Section -->
+        <!-- Example Section (optional) -->
+
+
+<!-- Question Section -->
+<div class="mt-3 p-3 border rounded" style="background:#f7fdff;">
+  <p><strong>Question:</strong> ${lesson.question}</p>
+  <input type="text" id="answerInput" class="form-control mb-2" placeholder="Type your answer here">
+  <button id="checkBtn" class="btn btn-outline-primary btn-sm">Check Answer</button>
+  <div id="feedback" class="mt-2 fw-semibold"></div>
+</div>
+
+
+        <button id="nextBtn" class="btn-next" disabled>Next Lesson</button>
+      </div>
+    `;
+
+    // Button logic
+    const checkBtn = document.getElementById("checkBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const feedback = document.getElementById("feedback");
+
+   checkBtn.addEventListener("click", () => {
+  const userAnswer = document.getElementById("answerInput").value
+    .trim()
+    .toLowerCase();
+
+  // Normalize correct answers
+  const correctAnswers = lesson.answer.map(a => a.trim().toLowerCase());
+
+  // Check if any correct answer matches
+  const isCorrect = correctAnswers.some(ans => ans === userAnswer);
+
+  if (isCorrect) {
+    feedback.textContent = "✅ Correct! You may proceed.";
+    feedback.style.color = "green";
+    nextBtn.disabled = false;
+  } else {
+    feedback.textContent = "❌ Incorrect. Try again!";
+    feedback.style.color = "red";
+    nextBtn.disabled = true;
+  }
+});
+
+
+
+
+    nextBtn.addEventListener("click", () => {
+      if (currentLesson < mod.lessons.length - 1) {
+        currentLesson++;
+        renderLesson();
+      } else {
+        content.innerHTML = `<h4>✅ Congratulations!</h4><p>You’ve completed the <strong>${mod.title}</strong> module.</p>`;
+      }
+    });
+  }
+
+  renderLesson();
+}
+
+// Connect sidebar cards
+document.querySelectorAll(".vuln-card").forEach(card => {
+  card.addEventListener("click", () => {
+    const moduleKey = card.dataset.module;
+    loadModule(moduleKey);
+  });
+});
+
+// 🎨 Main content area
+const contentDiv = document.getElementById('moduleContent');
+
+// Progress initialization & filter handling
+document.addEventListener("DOMContentLoaded", () => {
+  // progress circles on sidebar cards
+  document.querySelectorAll(".vuln-card").forEach(card => {
+    const moduleKey = card.dataset.module;
+    const progress = moduleData[moduleKey]?.progress || 0;
+
+    const circle = card.querySelector(".circle-progress");
+    const text = card.querySelector(".progress-text");
+    if (!circle || !text) return;
+
+    const radius = 15.915;
+    const circumference = 2 * Math.PI * radius;
+    circle.style.strokeDasharray = `${circumference} ${circumference}`;
+    circle.style.strokeDashoffset = circumference;
+
+    const offset = circumference - (progress / 100) * circumference;
+    circle.style.strokeDashoffset = offset;
+    text.textContent = `${progress}%`;
+
+    if (progress >= 80) card.querySelector(".circle-wrap")?.classList.add("glow");
+  });
+
+  // sidebar card clicks -> open module
+  document.querySelectorAll('.vuln-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const moduleKey = card.dataset.module;
+      renderModule(moduleKey);
+    });
+  });
+
+  // filter buttons
+  const filterButtons = document.querySelectorAll(".filter-btn");
+  const vulnCards = document.querySelectorAll(".vuln-card");
+  filterButtons.forEach(button => {
+    button.addEventListener("click", () => {
+      filterButtons.forEach(btn => btn.classList.remove("active"));
+      button.classList.add("active");
+      const selectedDiff = button.getAttribute("data-diff");
+      vulnCards.forEach(card => {
+        const cardDiff = card.getAttribute("data-diff");
+        if (selectedDiff === "All" || cardDiff === selectedDiff) {
+          card.style.display = "flex";
+        } else {
+          card.style.display = "none";
+        }
+      });
+    });
+  });
+});
+
+const STORAGE_KEY = 'learning_module_state';
+
+function loadSavedState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return {};
+    return JSON.parse(raw);
+  } catch (e) { return {}; }
+}
+
+function saveState(state) {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+}
+
+let moduleState = loadSavedState(); // { [moduleKey]: { completed: [0,1], simulationDone: false, currentIndex: 0, answers: { "0": "answer" } } }
+
+// ensure every module has an entry
+Object.keys(moduleData).forEach(k => {
+  if (!moduleState[k]) moduleState[k] = { completed: [], simulationDone: false, currentIndex: 0, answers: {} };
+  // ensure fields exist if older saved state lacks them
+  if (!Array.isArray(moduleState[k].completed)) moduleState[k].completed = [];
+  if (typeof moduleState[k].simulationDone !== 'boolean') moduleState[k].simulationDone = false;
+  if (typeof moduleState[k].currentIndex !== 'number') moduleState[k].currentIndex = 0;
+  if (typeof moduleState[k].answers !== 'object' || moduleState[k].answers === null) moduleState[k].answers = {};
+
+  // also populate moduleData progress initial from saved state or existing progress
+  moduleData[k].progress = moduleData[k].progress || 0;
+  // if saved simulation was done, mark progress 100
+  if (moduleState[k].simulationDone) moduleData[k].progress = 100;
+ else {
+  // compute lesson-based progress (snap to 25, 50, 80)
+  const completedCount = (moduleState[k].completed || []).length;
+  const total = (moduleData[k].lessons || []).length || 1;
+  let lessonProgress = Math.round((completedCount / total) * 80);
+
+  // snap to your clean milestone values
+  if (lessonProgress >= 20 && lessonProgress < 37) lessonProgress = 25;
+  else if (lessonProgress >= 37 && lessonProgress < 65) lessonProgress = 50;
+  else if (lessonProgress >= 65) lessonProgress = 80;
+  else lessonProgress = 0; // nothing done yet
+
+  moduleData[k].progress = lessonProgress;
+}
+
+});
+
+// call once to sync sidebar visuals after page load
+function refreshSidebarProgress(moduleKey) {
+  const card = document.querySelector(`.vuln-card[data-module="${moduleKey}"]`);
+  if (!card) return;
+
+  const progress = moduleData[moduleKey]?.progress ?? 0;
+  const circle = card.querySelector(".circle-progress"); // ensure this is the <circle> element inside the SVG
+  const text = card.querySelector(".progress-text");
+  if (!circle || !text) return;
+
+  const radius = 15.915;
+  const circumference = 2 * Math.PI * radius;
+
+  // Use setProperty to avoid CSS specificity issues
+  circle.style.setProperty('stroke-dasharray', `${circumference} ${circumference}`);
+  const offset = circumference - (progress / 100) * circumference;
+  circle.style.setProperty('stroke-dashoffset', String(offset));
+
+  text.textContent = `${progress}%`;
+
+  const glowWrap = card.querySelector(".circle-wrap");
+  if (glowWrap) {
+    glowWrap.classList.toggle("glow", progress >= 80);
+  }
+}
+
+function refreshAllSidebarProgress() {
+  Object.keys(moduleData).forEach(k => refreshSidebarProgress(k));
+}
+// Listen for localStorage changes from other tabs/windows
+window.addEventListener('storage', (e) => {
+  if (!e) return;
+  if (e.key === STORAGE_KEY) {
+    moduleState = loadSavedState();
+    refreshAllSidebarProgress();
+  }
+});
+
+if (window.BroadcastChannel) {
+  try {
+    const bc = new BroadcastChannel('learning_module_channel');
+    bc.onmessage = (ev) => {
+      if (!ev.data) return;
+      const { type, module, progress } = ev.data;
+
+      if (type === 'module_sim_done' || type === 'module_quiz_done' || type === 'module_progress_full') {
+        moduleState = loadSavedState();
+
+        if (typeof progress === 'number' && module && moduleData[module]) {
+          moduleData[module].progress = progress;
+        }
+
+        // refresh visuals for all to be safe
+        refreshAllSidebarProgress();
+
+        Swal.fire({
+          toast: true,
+          position: 'top-end',
+          icon: 'success',
+          title: `✅ ${module ? module.toUpperCase() : 'Module'} updated to ${progress || (module && moduleData[module] ? moduleData[module].progress : '')}%`,
+          showConfirmButton: false,
+          timer: 2000
+        });
+      }
+    };
+  } catch (e) {
+    console.warn('BroadcastChannel not available', e);
+  }
+}
+
+// ---------- FILTERING LOGIC ----------
+document.addEventListener("DOMContentLoaded", () => {
+  // initialize moduleState etc. (you already run that earlier; keep consistency)
+  // Render initial sidebar progress
+  refreshAllSidebarProgress();
+
+  // wire sidebar card clicks -> open module (ensure this points to your renderModule)
+  document.querySelectorAll('.vuln-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const moduleKey = card.dataset.module;
+      renderModule(moduleKey);
+    });
+  });
+
+  // filter buttons - when clicked, hide/show cards then refresh circles for visible ones
+  const filterButtons = document.querySelectorAll(".filter-btn");
+  const vulnCards = document.querySelectorAll(".vuln-card");
+  filterButtons.forEach(button => {
+    button.addEventListener("click", () => {
+      // update active class
+      filterButtons.forEach(btn => btn.classList.remove("active"));
+      button.classList.add("active");
+
+      const selectedDiff = button.getAttribute("data-diff");
+      vulnCards.forEach(card => {
+        const cardDiff = card.getAttribute("data-diff");
+        if (selectedDiff === "All" || cardDiff === selectedDiff) {
+          // keep layout consistent with your CSS; many of your cards used 'flex'
+          card.style.display = "flex";
+        } else {
+          card.style.display = "none";
+        }
+      });
+
+      // Re-render progress for (now) visible cards
+      // small delay allows DOM to update in case of reflow / template cloning
+      setTimeout(refreshAllSidebarProgress, 30);
+    });
+  });
+});
+
+// Optional: BroadcastChannel listener (fires even if storage events do not)
+if (window.BroadcastChannel) {
+  try {
+    const bc = new BroadcastChannel('learning_module_channel');
+    bc.onmessage = (ev) => {
+      if (!ev.data) return;
+
+      const { type, module, progress } = ev.data;
+
+      if (type === 'module_sim_done' || type === 'module_quiz_done' || type === 'module_progress_full') {
+        moduleState = loadSavedState();
+
+        // If a specific progress value is sent (like 100%), update immediately
+        if (typeof progress === 'number') {
+          moduleData[module].progress = progress;
+        }
+
+        refreshSidebarProgress(module);
+
+        // optional visual feedback on dashboard
+        Swal.fire({
+          toast: true,
+          position: 'top-end',
+          icon: 'success',
+          title: `✅ ${module.toUpperCase()} module updated to ${progress || moduleData[module].progress}%`,
+          showConfirmButton: false,
+          timer: 2000
+        });
+      }
+    };
+  } catch (e) {
+    console.warn('BroadcastChannel not available', e);
+  }
+}
+
+// Mark a lesson completed and recompute progress (lessons contribute up to 80%)
+function markLessonCompleted(moduleKey, lessonIndex) {
+  if (!moduleData[moduleKey]) return;
+  const total = (moduleData[moduleKey].lessons || []).length || 1;
+  const state = moduleState[moduleKey] || { completed: [], simulationDone: false, currentIndex: 0, answers: {} };
+
+  if (!state.completed.includes(lessonIndex)) {
+    state.completed.push(lessonIndex);
+    state.completed = Array.from(new Set(state.completed)).sort((a, b) => a - b);
+    moduleState[moduleKey] = state;
+
+    // compute and snap lesson progress
+    const completedCount = state.completed.length;
+    let lessonProgress = Math.round((completedCount / total) * 80);
+
+    // snap to 25, 50, or 80
+    if (lessonProgress >= 20 && lessonProgress < 37) lessonProgress = 25;
+    else if (lessonProgress >= 37 && lessonProgress < 65) lessonProgress = 50;
+    else if (lessonProgress >= 65) lessonProgress = 80;
+
+    moduleData[moduleKey].progress = lessonProgress;
+    saveState(moduleState);
+    refreshSidebarProgress(moduleKey);
+  }
+}
+
+
+// Mark simulation completed (gives the final 20% so progress => 100)
+function markSimulationCompleted(moduleKey) {
+  if (!moduleData[moduleKey]) return;
+  const state = moduleState[moduleKey] || { completed: [], simulationDone: false, currentIndex: 0, answers: {} };
+  state.simulationDone = true;
+  moduleState[moduleKey] = state;
+  moduleData[moduleKey].progress = 100;
+  saveState(moduleState);
+  refreshSidebarProgress(moduleKey);
+}
+
+// initialize sidebar visuals on DOMContentLoaded (if your script runs earlier, call it after DOM ready)
+document.addEventListener("DOMContentLoaded", () => {
+  refreshAllSidebarProgress();
+});
+
+// ---------- Main renderer (single, cleaned) ----------
+function renderModule(key) {
+  const data = moduleData[key];
+  if (!data) return console.warn('No module data for key:', key);
+
+  const container = document.getElementById("moduleContent");
+  if (!container) return console.error('Container #moduleContent not found in DOM.');
+
+  // keep local index, initialize from saved state for this module (persist last-opened lesson)
+  let currentIndex = (moduleState[key] && typeof moduleState[key].currentIndex === 'number') ? moduleState[key].currentIndex : 0;
+
+  // show lesson by index
+  function showLesson(index) {
+    // clamp
+    if (index < 0) index = 0;
+    if (index >= data.lessons.length) return showSimulationSlide();
+
+    currentIndex = index;
+
+    // Save current index so it persists across reloads/close-open
+    try {
+      moduleState[key] = moduleState[key] || { completed: [], simulationDone: false, currentIndex: 0, answers: {} };
+      moduleState[key].currentIndex = currentIndex;
+      saveState(moduleState);
+    } catch (e) {
+      console.warn('Could not save current index', e);
+    }
+
+    const lesson = data.lessons[index];
+
+    container.innerHTML = ""; // clear
+
+    // Title & meta
+    const titleEl = document.createElement('h4');
+    titleEl.textContent = `${data.title} — ${lesson.title} (${index + 1}/${data.lessons.length})`;
+    container.appendChild(titleEl);
+
+    // Lesson box
+    const box = document.createElement('div');
+    box.className = 'lesson-box';
+
+    // paragraphs
+    const p1 = document.createElement('p'); p1.textContent = lesson.p1 || '';
+    const p2 = document.createElement('p'); p2.textContent = lesson.p2 || '';
+    box.appendChild(p1);
+    box.appendChild(p2);
+
+    // bullets
+    if (lesson.bullets && lesson.bullets.length) {
+      const ul = document.createElement('ul');
+      lesson.bullets.forEach(b => {
+        const li = document.createElement('li');
+        li.textContent = b;
+        ul.appendChild(li);
+      });
+      box.appendChild(ul);
+    }
+
+    // image (if any)
+    if (lesson.img) {
+      const img = document.createElement('img');
+      img.src = lesson.img;
+      img.alt = lesson.imgAlt || '';
+      img.className = 'lesson-image';
+      box.appendChild(img);
+      if (lesson.imgCaption) {
+        const cap = document.createElement('p');
+        cap.className = 'caption';
+        cap.innerHTML = lesson.imgCaption;
+        box.appendChild(cap);
+      }
+    }
+
+    // analogy
+    if (lesson.analogy) {
+      const an = document.createElement('p');
+      an.style.fontStyle = 'bold';
+      an.textContent = `Analogy: ${lesson.analogy}`;
+      box.appendChild(an);
+    }
+
+    // REFERENCES (New Section)
+    if (lesson.references && lesson.references.length) {
+      const refDiv = document.createElement('div');
+      refDiv.style.marginTop = '20px';
+      refDiv.style.paddingTop = '10px';
+      refDiv.style.borderTop = '1px solid #eee';
+      
+      const refHeader = document.createElement('h6');
+      refHeader.textContent = 'References:';
+      refHeader.style.fontSize = '0.9rem';
+      refHeader.style.fontWeight = 'bold';
+      refHeader.style.marginBottom = '5px';
+      refDiv.appendChild(refHeader);
+
+      const refUl = document.createElement('ul');
+      refUl.style.fontSize = '0.85rem';
+      refUl.style.marginBottom = '0';
+      refUl.style.paddingLeft = '20px';
+      
+      lesson.references.forEach(r => {
+        const li = document.createElement('li');
+        // Automatically makes links clickable if they start with http
+        if (r.startsWith('http')) {
+            const a = document.createElement('a');
+            a.href = r;
+            a.textContent = r;
+            a.target = '_blank';
+            a.style.color = '#03cae4'; 
+            li.appendChild(a);
+        } else {
+            li.innerHTML = r;
+        }
+        refUl.appendChild(li);
+      });
+      refDiv.appendChild(refUl);
+      box.appendChild(refDiv);
+    }
+
+    // QUESTION block (if present)
+    let nextBtnRef; // reference to next button (so check handler can enable it)
+    if (lesson.question) {
+      const qWrap = document.createElement('div');
+      qWrap.className = 'mt-4 p-3 border rounded';
+      qWrap.style.background = '#f7fdff';
+
+      const qText = document.createElement('p');
+      qText.innerHTML = `<strong>Question:</strong> ${lesson.question}`;
+      qWrap.appendChild(qText);
+
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.className = 'form-control mb-2';
+      input.placeholder = 'Type your answer here...';
+      qWrap.appendChild(input);
+
+      const checkBtn = document.createElement('button');
+      checkBtn.className = 'btn btn-outline-primary btn-smi';
+      checkBtn.textContent = 'Check Answer';
+      qWrap.appendChild(checkBtn);
+
+      const feedback = document.createElement('div');
+      feedback.className = 'mt-2 fw-semibold';
+      qWrap.appendChild(feedback);
+
+      box.appendChild(qWrap);
+
+      // store references for later wiring
+      box._q = { input, checkBtn, feedback, correct: (lesson.answer || '').toString().trim().toLowerCase() };
+    }
+
+    // navigation row
+    const nav = document.createElement('div');
+    nav.className = 'd-flex justify-content-between mt-4';
+
+    // prev
+    const prevBtn = document.createElement('button');
+    prevBtn.className = 'btn btn-secondaryy';
+    prevBtn.textContent = '← Previous';
+    prevBtn.disabled = index === 0;
+    prevBtn.addEventListener('click', () => {
+      if (index > 0) showLesson(index - 1);
+    });
+    nav.appendChild(prevBtn);
+
+    // next
+    const nextBtn = document.createElement('button');
+    nextBtn.className = 'btn btn-next';
+    nextBtn.textContent = index === data.lessons.length - 1 ? 'Next: Simulation →' : 'Next Lesson →';
+    nextBtn.addEventListener('click', () => {
+      if (index < data.lessons.length - 1) showLesson(index + 1);
+      else showSimulationSlide();
+    });
+    if (lesson.question) nextBtn.disabled = true;
+    nav.appendChild(nextBtn);
+
+    // append nav & box to container
+    container.appendChild(box);
+    container.appendChild(nav);
+
+    // Now wire question check (if present)
+    if (box._q) {
+      const { input, checkBtn, feedback, correct } = box._q;
+
+      // --- RESTORE previously saved answer if any ---
+      try {
+        const savedAnswer = moduleState[key] && moduleState[key].answers ? moduleState[key].answers[String(index)] : undefined;
+        const lessonCompleted = moduleState[key] && Array.isArray(moduleState[key].completed) && moduleState[key].completed.includes(index);
+        if (savedAnswer !== undefined) {
+          input.value = savedAnswer;
+        }
+        // If lesson was previously completed, mark as correct UI-wise immediately
+        if (lessonCompleted) {
+          feedback.textContent = '✅ Correct! You may proceed.';
+          feedback.style.color = 'green';
+          nextBtn.disabled = false;
+        }
+      } catch (e) {
+        console.warn('Could not restore saved answer', e);
+      }
+
+      checkBtn.addEventListener('click', () => {
+        const val = (input.value || '').trim().toLowerCase();
+        if (!val) {
+          feedback.textContent = 'Please type an answer.';
+          feedback.style.color = '#a63';
+          nextBtn.disabled = true;
+          return;
+        }
+        if (val === correct) {
+          feedback.textContent = '✅ Correct! You may proceed.';
+          feedback.style.color = 'green';
+          nextBtn.disabled = false;
+
+          // ✅ record completion for progress tracking
+          try {
+            // save the typed answer for restore later
+            moduleState[key] = moduleState[key] || { completed: [], simulationDone: false, currentIndex: 0, answers: {} };
+            moduleState[key].answers[String(index)] = input.value.trim();
+            saveState(moduleState);
+          } catch (e) {
+            console.warn('Could not save answer', e);
+          }
+
+          try {
+            markLessonCompleted(key, index);
+          } catch (e) {
+            console.warn('Could not mark lesson complete', e);
+          }
+
+        } else {
+          feedback.textContent = '❌ Incorrect. Try again!';
+          feedback.style.color = 'red';
+          nextBtn.disabled = true;
+
+          // Save attempted answer so user doesn't lose typing on reload (optional)
+          try {
+            moduleState[key] = moduleState[key] || { completed: [], simulationDone: false, currentIndex: 0, answers: {} };
+            moduleState[key].answers[String(index)] = input.value.trim();
+            saveState(moduleState);
+          } catch (e) {
+            console.warn('Could not save attempted answer', e);
+          }
+        }
+      });
+
+      input.addEventListener('keyup', (e) => {
+        if (e.key === 'Enter') checkBtn.click();
+      });
+    }
+  }
+
+
+  // simulation-ready slide
+  function showSimulationSlide() {
+    container.innerHTML = '';
+
+    const h4 = document.createElement('h4');
+    h4.textContent = `${data.title} — Simulation Ready`;
+    container.appendChild(h4);
+
+    const desc = document.createElement('p');
+    desc.style.color = '#4f656c';
+    desc.style.textAlign = 'center';
+    desc.textContent = "You're ready to put your knowledge into practice! Click the button below to start the safe simulation.";
+    container.appendChild(desc);
+
+    const summary = document.createElement('div');
+    summary.className = 'lesson-box';
+    summary.innerHTML = '<h5>Quick Summary</h5>';
+    const ul = document.createElement('ul');
+
+    if (data.quickActivity?.instructions) {
+      const actLi = document.createElement('li');
+      actLi.innerHTML = `<b>Quick Activity — ${data.quickActivity.title}:</b>`;
+      const nested = document.createElement('ul');
+      data.quickActivity.instructions.forEach(step => {
+        const li = document.createElement('li');
+        li.textContent = step;
+        nested.appendChild(li);
+      });
+      if (data.quickActivity.note) {
+        const noteLi = document.createElement('li');
+        noteLi.textContent = data.quickActivity.note;
+        noteLi.style.fontStyle = 'italic';
+        nested.appendChild(noteLi);
+      }
+      actLi.appendChild(nested);
+      ul.appendChild(actLi);
+    }
+
+    if (data.keyTakeaways) {
+      const tLi = document.createElement('li');
+      tLi.innerHTML = `<b>Key Takeaways:</b>`;
+      const nested = document.createElement('ul');
+      data.keyTakeaways.forEach(t => {
+        const li = document.createElement('li');
+        li.textContent = t;
+        nested.appendChild(li);
+      });
+      tLi.appendChild(nested);
+      ul.appendChild(tLi);
+    }
+
+    if (data.forParentsTeachers) {
+      const pLi = document.createElement('li');
+      pLi.innerHTML = `<b>Why It Matters:</b> ${data.forParentsTeachers.short}`;
+      const nested = document.createElement('ul');
+      data.forParentsTeachers.tips.forEach(t => {
+        const li = document.createElement('li');
+        li.textContent = t;
+        nested.appendChild(li);
+      });
+      pLi.appendChild(nested);
+      ul.appendChild(pLi);
+    }
+
+    if (data.glossary) {
+      const gLi = document.createElement('li');
+      gLi.innerHTML = `<b>Glossary:</b>`;
+      const nested = document.createElement('ul');
+      data.glossary.forEach(g => {
+        const li = document.createElement('li');
+        li.innerHTML = `<b>${g.term}:</b> ${g.def}`;
+        nested.appendChild(li);
+      });
+      gLi.appendChild(nested);
+      ul.appendChild(gLi);
+    }
+
+    summary.appendChild(ul);
+    container.appendChild(summary);
+
+    const controls = document.createElement('div');
+    controls.style.display = 'flex';
+    controls.style.justifyContent = 'space-between';
+    controls.style.marginTop = '12px';
+
+    const backBtn = document.createElement('button');
+    backBtn.className = 'btn-next';
+    backBtn.textContent = '← Back to Last Lesson';
+    backBtn.addEventListener('click', () => showLesson(data.lessons.length - 1));
+    controls.appendChild(backBtn);
+
+    const startBtn = document.createElement('button');
+    startBtn.className = 'btn-sim';
+    startBtn.textContent = 'Start Simulation';
+    startBtn.addEventListener('click', () => {
+  const mapByKey = {
+    sql: 'sqlinjection.html',
+    phishing: 'phishatk.html',
+    adattack: 'adatk.html',
+    weakpw: 'tryweak.html',
+    bruteforce: 'bruteforce.php',
+    xss: 'xssatk.html'
+  };
+
+
+  const target = mapByKey[key] || 'index.html';
+  window.location.href = target;
+});
+
+    controls.appendChild(startBtn);
+
+    container.appendChild(controls);
+  }
+
+  // show saved (or default) lesson index on first render
+  // clamp index bounds
+  if (currentIndex < 0) currentIndex = 0;
+  if (currentIndex >= data.lessons.length) currentIndex = 0;
+
+  showLesson(currentIndex);
+
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,1461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="photos/headerlogo.png">
+  <title>NetAware — Phishing Simulation</title>
+  <style>
+    :root {
+      --deep-navy: #1c2430;
+      --teal: #00c7d4;
+      --soft-cyan: #e9fbff;
+      --pale: #f6fbfc;
+      --muted: #375a6a;
+      --card: #ffffff;
+      --accent-2: #90d5ff;
+      --danger: #dc3545;
+      --success: #28a745;
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+
+    html, body {
+      margin: 0;
+      background: linear-gradient(180deg, var(--pale), #eef9ff);
+      color: var(--muted);
+      padding-top: 12px;
+      box-sizing: border-box;
+    }
+    body { 
+      overflow-y: scroll; 
+    }
+    /* Header */
+    .header {
+      background: var(--deep-navy);
+      border-bottom: 4px solid var(--teal);
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: #fff;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 300;
+      height: 64px;
+    }
+
+    .logo-circle {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: #03cae4;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .logo-circle img {
+      width: 28px;
+      height: 28px;
+      object-fit: contain;
+    }
+
+    .brand {
+      font-size:1.4rem; 
+      font-weight:700; 
+      color:#fff;
+    }
+    /* Layout */
+    .main-wrap {
+      display: flex;
+      height: calc(100vh - 64px);
+      margin-top: 64px;
+      overflow: hidden;
+    }
+    /* Sidebar */
+    .sidebar {
+      width: 260px;
+      height: calc(100vh - 64px);
+      box-sizing: border-box;
+      padding: 15px;
+      background:var(--card);
+      border-right: 1px solid #dadce0;
+      display: flex;
+      flex-direction: column;
+    }
+    .compose-btn {
+      display: block;
+      background: #e8f0fe;
+      color: #03cae4;
+      font-weight: bold;
+      padding: 12px 18px;
+      border-radius: 24px;
+      text-align: center;
+      margin-bottom: 20px;
+      text-decoration: none;
+    }
+    .menu-item {
+      padding: 8px 12px;
+      border-radius: 6px;
+      color: #202124;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+    }
+    .menu-item.active { background: #e8f0fe; font-weight: bold; }
+    .menu-item:hover { background: #f1f3f4; }
+    .labels { margin-top: 20px; }
+    .label-item {
+      padding: 6px 12px;
+      font-size: 14px;
+      color: #5f6368;
+      cursor: pointer;
+    }
+    .label-item:hover {
+      background: #f1f3f4;
+      border-radius: 6px;
+    }
+    .custom-dashboard-btn {
+  background-color: #03cae4 !important; /* teal accent color */
+  color: white !important;
+  border: none !important;
+  border-radius: 8px !important;
+  padding: 8px 16px !important;
+  font-weight: 600 !important;
+  transition: background 0.3s;
+}
+
+.custom-dashboard-btn:hover {
+  background-color: #029bb3 !important; /* darker on hover */
+}
+
+    .more-info {
+      margin-top: auto;
+      text-align: center;
+      padding: 12px;
+      font-size: 14px;
+      border-top: 1px solid #dadce0;
+      color: #5f6368;
+      cursor: pointer;
+    }
+    .more-info:hover {
+      background: #f1f3f4;
+      border-radius: 6px;
+    }
+    /* Email Content */
+    .email-content {
+      flex: 1;
+      background:linear-gradient(180deg,var(--pale), #eef9ff) !important;
+      color:var(--muted);
+      padding: 30px;
+      overflow-y: auto;
+      height: 100%;    
+    }
+    /* Spam List Modal */
+    .spam-modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.4);
+      justify-content: center;
+      align-items: center;
+      z-index: 200;
+    }
+    .spam-box {
+      width: 800px;
+      max-height: 80vh;
+      background: #fff;
+      border-radius: 8px;
+      overflow-y: auto;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+    .spam-header {
+      background: #f1f3f4;
+      padding: 12px 16px;
+      border-bottom: 1px solid #dadce0;
+      font-weight: bold;
+    }
+    .spam-item {
+      padding: 12px 16px;
+      border-bottom: 1px solid #eee;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .spam-item:hover { background: #f9f9f9; }
+    .spam-from { font-weight: bold; color: #202124; }
+    .spam-subject { color: #5f6368; font-size: 14px; flex: 1; margin-left: 10px; }
+    .spam-date { color: #5f6368; font-size: 13px; }
+    .close-spam {
+      position: absolute;
+      top: 10px; right: 20px;
+      font-size: 22px;
+      cursor: pointer;
+    }
+    /* Floating Quiz Button */
+    .quiz-btn {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 60px; height: 60px;
+      border-radius: 50%;
+      background: #03cae4;
+      color: #fff;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+    }
+    .quiz-btn:hover { background: #03cae4; }
+
+    body.modal-open {
+      overflow: hidden;
+      padding-right: var(--scrollbar-comp);
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      justify-content: center;
+      align-items: center;
+      animation: fadeIn 0.2s ease;
+      z-index: 999;
+    }
+    /* Fix for header overlap */
+    #quizModal {
+      align-items: flex-start;
+      padding-top: 80px;
+    }
+    .modal-content.quiz-box {
+      background: #fff;
+      width: 100%;
+      max-width: 700px;
+      border-radius: 10px;
+      overflow: hidden;
+      animation: popIn 0.25s ease;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .quiz-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 20px;
+    }
+    .quiz-body {
+      padding: 18px;
+      max-height: 45vh;
+      overflow-y: auto;
+    }
+    .quiz-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      padding: 14px 20px;
+      border-top: 1px solid #ddd;
+      background: #fafafa;
+    }
+
+    .quiz-question {
+      margin-bottom: 16px;
+      font-weight: 600;
+    }
+    .quiz-question b {
+      color: var(--deep-navy);
+      display: block;
+      margin-bottom: 6px;
+    }
+    .quiz-question label {
+      display: block;
+      margin: 3px 0;
+      cursor: pointer;
+      font-size: 15px;
+    }
+
+    .btn-accent {
+      background: #03cae4;
+      color: #fff;
+      border: none;
+      padding: 8px 18px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .progress-section {
+      margin-bottom: 20px;
+      padding: 10px;
+      border: 1px solid #dadce0;
+      border-radius: 8px;
+      background: #f8fafc;
+      text-align: center;
+      font-family: 'Segoe UI', Arial, sans-serif;
+    }
+
+    #progressText {
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: #1a1a1a;
+      font-size: 15px;
+    }
+
+    .progress-bar-wrap {
+      height: 10px;
+      background: #e6eef1;
+      border-radius: 8px;
+      overflow: hidden;
+      margin-bottom: 12px;
+    }
+
+    #progressBar {
+      height: 100%;
+      width: 0%;
+      background: #03cae4;
+      transition: width 0.3s;
+    }
+
+    #resetSimBtn {
+      width: 100%;
+      padding: 8px 0;
+      border: none;
+      border-radius: 6px;
+      background: #03cae4;
+      color: #fff;
+      font-weight: 600;
+      cursor: pointer;
+      letter-spacing: 0.3px;
+    }
+
+    #resetSimBtn:hover {
+      background: #03cae4 !important;
+    }
+
+    .btn-secondary {
+      background: #ccc;
+      border: none;
+      padding: 8px 18px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .btn-secondary:hover { background: #aaa; }
+
+    .close {
+      font-size: 22px;
+      cursor: pointer;
+      color: #fff;
+    }
+    .modal-content h2 { margin-top: 0; }
+    /* Guided tour tooltip + overlay */
+    .tour-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      z-index: 1200;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+    }
+    .tour-tooltip {
+      position: absolute;
+      max-width: 320px;
+      background: #fff;
+      color: #1c2430;
+      border-radius: 8px;
+      padding: 12px 14px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+      z-index: 1201;
+      font-size: 14px;
+    }
+    .tour-tooltip .title { font-weight:700; margin-bottom:6px; color:var(--deep-navy); }
+    .tour-tooltip .body { color:var(--muted); margin-bottom:10px; }
+    .tour-tooltip .ok { background:var(--teal); color:#fff; border:none; padding:6px 10px; border-radius:6px; cursor:pointer; }
+    .tour-arrow {
+      position: absolute;
+      width:12px; height:12px;
+      background: #fff;
+      transform: rotate(45deg);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+      z-index: 1200;
+    }
+    .tour-hidden { display:none !important; }
+    .btn-accent:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .btn-accent:hover { background: #03cae4 }
+    .message-body a:hover{ background: #03cae4 !important;  }
+    .swal2-container.swal2-top-end {
+      top: 100px !important;
+    }
+    .swal-reset-popup {
+      padding: 10px 14px;
+    }
+    /* Hamburger button */
+    .menu-toggle {
+      margin-left: auto;
+      font-size: 24px;
+      cursor: pointer;
+      display: none;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes fadeOut {
+      from { opacity: 1; }
+      to { opacity: 0; }
+    }
+    @keyframes popIn {
+      from { transform: scale(0.95); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    /* Responsive sidebar */
+    @media (max-width: 768px) {
+      .sidebar {
+        position: fixed;
+        left: -260px;
+        top: 64px;
+        width: 240px;
+        height: calc(100vh - 64px);
+        background: var(--card);
+        transition: left 0.3s ease;
+        z-index: 500;
+      }
+
+      .sidebar.open {
+        left: 0;
+      }
+
+      .menu-toggle {
+        display: block;
+      }
+
+      .email-content {
+        flex: 1;
+        padding: 20px;
+      }
+    }
+    .modal-title{
+      color: #03cae4;
+    
+    }
+    .quiz-header .modal-title {
+      font-size: 20px;
+    }
+    .quiz-question b {
+      display: inline;
+    }
+
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <div class="header">
+    <div class="logo-circle">
+      <img src="netaware-logo.png" alt="Logo">
+    </div>
+    <div>
+      <div class="brand">NetAware Phishing</div>
+      <div class="menu-toggle" id="menuToggle">☰</div>
+    </div>
+  </div>
+  <!-- Layout -->
+  <div class="main-wrap">
+    <div class="sidebar" id="sidebar">
+      <!-- Sidebar content -->
+      <a href="#" class="compose-btn">Compose</a>
+        <!-- Progress + Reset Section -->
+      <div id="phishingProgressArea" class="progress-section">
+        <div id="progressText">Progress: 0/2</div>
+        <div class="progress-bar-wrap">
+          <div id="progressBar"></div>
+        </div>
+        <button id="resetSimBtn">Reset Simulation</button>
+      </div>
+      <div class="menu">
+        <div class="menu-item active">Inbox</div>
+        <div class="menu-item">Unread</div>
+        <div class="menu-item">Starred</div>
+        <div class="menu-item">Drafts</div>
+        <div class="menu-item">Sent</div>
+        <div class="menu-item">Archive <span>16</span></div>
+        <div class="menu-item" id="spamMenu">Spam</div>
+        <div class="menu-item">Trash</div>
+      </div>
+      <div class="labels">
+        <div class="label-item">Notes</div>
+        <div class="label-item">Personal</div>
+      </div>
+      <div class="more-info">More about Us</div>
+    </div>
+
+  <!-- Main Email Content -->
+  <div class="email-content" style="background:#f5f7f7;padding:30px;">
+    <div class="email-container" style="max-width:700px;margin:0 auto;background:var(--card);border:1px solid #dadce0;padding:20px; border-radius:12px; box-shadow:0 10px 30px rgba(3,202,228,0.08);">
+      <div class="subject-line" style="font-size:20px;font-weight:500;margin-bottom:15px;color:#202124;">
+        🔒 [Action Required] GCash Sim Act
+      </div>
+      <div class="sender-info" style="display:flex;align-items:center;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid #e0e0e0;">
+       <div class="avatar" 
+     style="
+        width:40px;
+        height:40px;
+        border-radius:50%;
+        background-image: url('photos/gcash-logo.jpg');
+        background-size:cover;
+        background-position:center;
+        margin-right:10px;
+     ">
+</div>
+
+        <div class="sender-details" style="font-size:14px;">
+          <div class="sender-name" style="font-weight:bold;">GCash Sim Act</div>
+          <div class="sender-email" style="color:#5f6368;">admin@gcashmobile.com</div>
+          <div style="color:#5f6368;">to Netaware@gmail.com</div>
+        </div>
+      </div>
+      <div class="message-body" style="font-size:14px;line-height:1.6;color:#202124;padding-top:16px;">
+        <p>Dear <b>Valued Client</b>,</p>
+        <p>In accordance to <b>Sim Registration Act,</b> we temporarily restrict any transactions/actions with your GCash Wallet. To reinstate the said feature, kindly take part in our SIM card pre-registration. Additional instructions will be given upon proceeding with the process.</p>
+        <p><b>Please Click or Visit the following link to start.</b></p>
+        <a href="otp.html" style="display:inline-block;background: #03cae4;;color:#fff;padding:8px 24px;border-radius:4px;text-decoration:none;font-weight:500;font-size:14px;margin:16px 0;"><strong>Restore My Account</strong></a>
+        <p style="margin-top:20px;color:#d93025;">⚠ If you don’t complete verification within 24 hours, your account may be permanently restricted.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Spam Modal -->
+  <div class="spam-modal" id="spamModal">
+    <div class="spam-box">
+      <div class="spam-header">Spam (99+) — Suspicious Emails</div>
+      <div id="spamList"></div>
+    </div>
+  </div>
+
+  <!-- Floating Quiz Button -->
+  <button class="quiz-btn">?</button>
+
+  <!-- QUIZ MODAL -->
+<div class="modal" id="quizModal">
+  <div class="modal-content quiz-box p-3">
+    <div class="quiz-header">
+      <h5 class="modal-title">🧠 Quick Quiz: Phishing Awareness</h5>
+    </div>
+    <div class="quiz-body">
+      <!-- Questions -->
+       <hr>
+<div class="quiz-question"> 
+  <b>1. Recall:</b> A phishing email often creates a sense of <b>_____</b> to make the victim click immediately.<br>
+  <label><input type="radio" name="q1" value="b"> celebration</label>
+  <label><input type="radio" name="q1" value="c"> boredom</label>
+  <label><input type="radio" name="q1" value="a"> urgency</label>
+  <label><input type="radio" name="q1" value="d"> friendliness</label>
+</div>
+<hr>
+
+<!-- 2 -->
+<div class="quiz-question"> 
+  <b>2. Scenario:</b> You received an email saying “Your bank account has been suspended. Click here to restore access.” You checked the sender’s address and noticed it was “security-update@bnk-support.info.” What detail reveals that this is a phishing attempt?<br>
+  <img src="photos/phishing_bankkk.png" alt="SQL Injection Example" style="width:250px; height:auto;" class="my-2"><br>
+    <h6 style="margin-top: 5px;margin-bottom: 15px;"><i>Source: OpenAI. (2025). Image generated using ChatGPT based on user prompt.</i></h6>
+  <label><input type="radio" name="q2" value="b"> The email mentioned your bank name</label>
+  <label><input type="radio" name="q2" value="a"> The sender email looks suspicious and not an official domain</label>
+  <label><input type="radio" name="q2" value="c"> The message included the date</label>
+  <label><input type="radio" name="q2" value="d"> The email used a professional tone</label>
+</div>
+<hr>
+
+<!-- 3 -->
+<div class="quiz-question"> 
+  <b>3. Scenario:</b> You clicked on “Spam (99+)” in the simulation and saw many fake alerts like “Netflix payment failed” and “GCash bonus ₱10,000.” These emails all try to make you click a link. What technique are these phishing messages using?<br>
+  <img src="photos/phishing_spam.png" alt="SQL Injection Example" style="width:250px; height:auto;" class="my-2"><br>
+  <h6 style="margin-top: 5px;margin-bottom: 15px;"><i>Source: Image taken from the simulation.</i></h6>
+  <label><input type="radio" name="q3" value="a"> Social engineering by pretending to be trusted services</label>
+  <label><input type="radio" name="q3" value="b"> Basic advertisement</label>
+  <label><input type="radio" name="q3" value="c"> Normal account reminders</label>
+  <label><input type="radio" name="q3" value="d"> Random spam not related to phishing</label>
+</div>
+<hr>
+
+<!-- 4 -->
+<div class="quiz-question"> 
+  <b>4. Scenario:</b> You get a message that says: “You won ₱10,000! Claim now before midnight.” You notice spelling errors and a suspicious link that doesn’t match the official website. What should you do?<br>
+  <img src="photos/phishing_wonnn.png" alt="SQL Injection Example" style="width:250px; height:auto;" class="my-2"><br>
+  <h6 style="margin-top: 5px;margin-bottom: 15px;"><i>Source: OpenAI. (2025). Image generated using ChatGPT based on user prompt.</i></h6>
+  <label><input type="radio" name="q4" value="b"> Click and check if the offer is real</label>
+  <label><input type="radio" name="q4" value="a"> Ignore and delete the message</label>
+  <label><input type="radio" name="q4" value="c"> Reply asking for proof</label>
+  <label><input type="radio" name="q4" value="d"> Share the message with friends</label>
+</div>
+<hr>
+
+<!-- 5 -->
+<div class="quiz-question"> 
+  <b>5. Scenario:</b> During the simulation, you opened a fake “OTP Verification” page asking you to enter your login code. What type of phishing attack tries to steal OTP codes by mimicking legitimate verification pages?<br>
+  <label><input type="radio" name="q5" value="a"> Credential harvesting</label>
+  <label><input type="radio" name="q5" value="b"> Malware injection</label>
+  <label><input type="radio" name="q5" value="c"> Network sniffing</label>
+  <label><input type="radio" name="q5" value="d"> Password spraying</label>
+</div>
+<hr>
+
+<!-- 6 -->
+<div class="quiz-question"> 
+  <b>6. Recall:</b> Which of the following is a clear sign of a phishing message?<br>
+  <label><input type="radio" name="q6" value="b"> A greeting with your full legal name</label>
+  <label><input type="radio" name="q6" value="c"> A message from your saved contacts</label>
+  <label><input type="radio" name="q6" value="d"> A notification from an app you installed</label>
+  <label><input type="radio" name="q6" value="a"> A link that does not match the official website</label>
+</div>
+<hr>
+
+<!-- 7 -->
+<div class="quiz-question"> 
+  <b>7. Recall:</b> Phishing attacks mainly aim to steal your ______.<br>
+  <label><input type="radio" name="q7" value="a"> personal information</label>
+  <label><input type="radio" name="q7" value="b"> browser theme</label>
+  <label><input type="radio" name="q7" value="c"> device brightness level</label>
+  <label><input type="radio" name="q7" value="d"> internet speed</label>
+</div>
+<hr>
+
+<!-- 8 -->
+<div class="quiz-question"> 
+  <b>8. Recall:</b> Before clicking any link, you should always check the <b>_____</b> to confirm if it’s legitimate.<br>
+  <label><input type="radio" name="q8" value="b"> message background color</label>
+  <label><input type="radio" name="q8" value="c"> emoji count</label>
+  <label><input type="radio" name="q8" value="a"> sender address</label>
+  <label><input type="radio" name="q8" value="d"> date posted</label>
+</div>
+<hr>
+
+<!-- 9 -->
+<div class="quiz-question"> 
+  <b>9. Recall:</b> Phishing attacks often direct victims to fake <b>_____</b> that mimic real login portals.<br>
+  <label><input type="radio" name="q9" value="b"> wallpapers</label>
+  <label><input type="radio" name="q9" value="a"> websites</label>
+  <label><input type="radio" name="q9" value="c"> playlists</label>
+  <label><input type="radio" name="q9" value="d"> backgrounds</label>
+</div>
+<hr>
+
+<!-- 10 -->
+<div class="quiz-question"> 
+  <b>10. Recall:</b> What is the best action when you receive a suspicious email asking you to “verify your account immediately”?<br>
+  <label><input type="radio" name="q10" value="b"> Click the link to confirm if it works</label>
+  <label><input type="radio" name="q10" value="c"> Reply to the sender for clarification</label>
+  <label><input type="radio" name="q10" value="d"> Forward the email to friends</label>
+  <label><input type="radio" name="q10" value="a"> Go directly to the official website and check manually</label>
+</div>
+
+
+    </div>
+    <div class="quiz-footer">
+      <button id="closeQuizBtn" class="btn-secondary">Close</button>
+      <button id="submitQuizBtn" class="btn-accent">Submit Quiz</button>
+    </div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+  
+  document.addEventListener("DOMContentLoaded", () => {
+  const DASH_KEY = 'learning_module_state';
+  const moduleKey = 'phishing'; // ✅ make sure this matches your dashboard key
+  const progressData = JSON.parse(localStorage.getItem(DASH_KEY) || "{}");
+
+  // ✅ Check if the module exists in localStorage
+  const module = progressData[moduleKey];
+
+  // ✅ If module data doesn’t exist or lessons are incomplete
+  if (!module || !module.completed || module.completed.length < 3) {
+    Swal.fire({
+      icon: 'warning',
+      title: '⚠️ Access Denied',
+      html: `
+        <p>You need to complete all lessons first before trying the simulation.</p>
+        <p><b>Required:</b> Lesson 1, Lesson 2, and Lesson 3</p>
+      `,
+      confirmButtonText: 'Go Back to Dashboard',
+      customClass: {
+        confirmButton: 'custom-dashboard-btn'
+      }
+    }).then(() => {
+      window.location.href = 'dashboard.html';
+    });
+  }
+});
+  // --- Quiz persistence ---
+const QUIZ_PROGRESS_KEY = "quiz_progress_v1";
+const QUIZ_LOCK_KEY = "quiz_lock_until_v1";
+const QUIZ_ATTEMPTS_KEY = "quiz_attempts_v1";
+function saveQuizProgress() {
+  const answers = {};
+  for (let i = 1; i <= 10; i++) {
+    const sel = document.querySelector(`input[name="q${i}"]:checked`);
+    if (sel) answers["q" + i] = sel.value;
+  }
+  localStorage.setItem(QUIZ_PROGRESS_KEY, JSON.stringify(answers));
+}
+
+function restoreQuizProgress() {
+  const raw = localStorage.getItem(QUIZ_PROGRESS_KEY);
+  if (!raw) return;
+  const answers = JSON.parse(raw);
+  for (const [q, val] of Object.entries(answers)) {
+    const el = document.querySelector(`input[name="${q}"][value="${val}"]`);
+    if (el) el.checked = true;
+  }
+}
+  // --- Spam list handling ---
+  // --- Phishing Progress System ---
+  const progressBar = document.getElementById('progressBar');
+  const progressText = document.getElementById('progressText');
+  const resetSimBtn = document.getElementById('resetSimBtn');
+  const startQuizBtn = document.querySelector('.quiz-btn');
+
+  let progressStage = parseInt(localStorage.getItem('phishProgress') || '0');
+  updateProgressUI();
+
+  function updateProgressUI() {
+    const percent = (progressStage / 2) * 100;
+    progressBar.style.width = percent + '%';
+    progressText.textContent = `Progress: ${progressStage}/2`;
+    resetSimBtn.disabled = (progressStage === 0);
+    startQuizBtn.style.display = (progressStage === 2) ? 'block' : 'none';
+    localStorage.setItem('phishProgress', progressStage);
+  }
+
+  const urlParams = new URLSearchParams(window.location.search);
+  let spamCount = parseInt(urlParams.get('spam') || 0);
+
+  // persist spam count
+  if (spamCount > 0) {
+    localStorage.setItem('phish_spam_count', spamCount);
+  } else {
+    const savedSpam = parseInt(localStorage.getItem('phish_spam_count') || 0);
+    if (savedSpam > 0) spamCount = savedSpam;
+  }
+  const spamMenu = document.getElementById('spamMenu');
+  if (spamCount > 0) {
+    spamMenu.innerHTML = `Spam <span>(${spamCount > 99 ? "99+" : spamCount})</span>`;
+    spamMenu.style.color = "#d93025";
+  }
+  const spamModal = document.getElementById('spamModal');
+  const closeSpamBtn = document.getElementById('closeSpamBtn');
+  const spamList = document.getElementById('spamList');
+  const fakeSpam = [
+    ["Bank Notice", "Your account has been suspended. Click here to restore access.", "Oct 6"],
+    ["Netflix Support", "We couldn’t process your payment. Update info now.", "Oct 5"],
+    ["Facebook Team", "Your page will be deleted. Confirm identity.", "Oct 4"],
+    ["Lazada Rewards", "Claim your ₱500 voucher before midnight!", "Oct 4"],
+    ["Security Update", "Urgent password reset required.", "Oct 3"],
+    ["Delivery Service", "We missed your delivery! Reschedule now.", "Oct 2"],
+    ["Google Account", "Suspicious login attempt detected.", "Oct 1"],
+    ["GCash Promo", "You’ve won ₱10,000 bonus — verify to claim.", "Sep 30"],
+    ["PLDT Alert", "Unpaid bill detected. Settle immediately.", "Sep 29"],
+    ["Apple ID", "Your account is locked for security reasons.", "Sep 28"]
+  ];
+    spamMenu.addEventListener('click', () => {
+      if (spamCount > 0) {
+        spamList.innerHTML = `
+          ${fakeSpam.map(
+            ([from, subject, date]) => `
+            <div class="spam-item">
+              <div class="spam-from">${from}</div>
+              <div class="spam-subject">${subject}</div>
+              <div class="spam-date">${date}</div>
+            </div>`
+          ).join("")}
+          <div style="
+            text-align:right;
+            margin-top:24px;
+            padding-right:16px;
+            padding-bottom:8px;
+          ">
+            <button id="closeSpamBtn" style="
+              background: #03cae4;
+              color:#fff;
+              border:none;
+              padding:10px 18px;
+              border-radius:8px;
+              cursor:pointer;
+              font-weight:600;
+            ">Close</button>
+          </div>
+        `;
+        spamModal.style.display = 'flex';
+
+        // hook the new close button
+        document.getElementById('closeSpamBtn').addEventListener('click', () => {
+          spamModal.style.display = 'none';
+
+          progressStage = 2;
+          updateProgressUI();
+
+          // prevent repeating the alert after first completion
+          if (localStorage.getItem('phish_sim_completed') === '1') return;
+          localStorage.setItem('phish_sim_completed', '1');
+
+          Swal.fire({
+            icon: 'success',
+            title: 'Phishing Simulation Completed',
+            html: `
+              <p>You have completed the phishing attack simulation.</p>
+              <p>Remember:</p>
+              <ul style="text-align:left; margin-left:20px">
+                <li>Always verify sender addresses.</li>
+                <li>Do not click links from unknown sources.</li>
+                <li>Enable two-factor authentication for extra protection.</li>
+              </ul>
+              <p>With this, you can now proceed with the quiz.</p>
+              <p>Are you ready?</p>
+            `,
+            showCancelButton: true,
+            confirmButtonText: 'Start Quiz',
+            confirmButtonColor: '#03cae4',
+            cancelButtonText: 'Later'
+          }).then(result => {
+            if (result.isConfirmed) {
+              openQuiz();
+            } else {
+              showQuizTooltip();
+            }
+          });
+        });
+      }
+    });
+  window.addEventListener('click', e => {
+    // background cannot close modal anymore
+    if (e.target === spamModal && !tutorialLock) {
+      // do nothing during tutorial lock
+      e.stopPropagation();
+    }
+  });
+  // --- Quiz Modal logic ---
+  const quizBtn = document.querySelector('.quiz-btn');
+  const quizModal = document.getElementById('quizModal');
+  const closeQuizBtn = document.getElementById('closeQuizBtn');
+  const quizBtnText = quizBtn.querySelector('span') || quizBtn;
+
+function openQuiz() {
+  const lockUntil = parseInt(localStorage.getItem(QUIZ_LOCK_KEY) || 0);
+  const now = Date.now();
+
+  if (now < lockUntil) {
+    const remaining = Math.ceil((lockUntil - now) / 1000);
+    Swal.fire({
+      icon: 'info',
+      title: '⏳ Cooldown Active',
+      text: `Please wait ${remaining} second(s) before retrying.`,
+      confirmButtonText: 'OK'
+    });
+    return;
+  }
+
+  // Scrollbar adjustment
+  const scrollBarWidth = window.innerWidth - document.documentElement.clientWidth;
+  document.documentElement.style.setProperty('--scrollbar-comp', scrollBarWidth + 'px');
+  document.body.classList.add('modal-open');
+
+  // Reset animation first
+  quizModal.style.animation = 'none';
+  quizModal.offsetHeight; // force reflow
+  quizModal.style.animation = 'fadeIn 0.25s ease';
+
+  quizModal.style.display = 'flex';
+  restoreQuizProgress();
+}
+
+function closeQuiz() {
+  saveQuizProgress();
+  quizModal.style.animation = 'fadeOut 0.25s ease';
+  quizModal.addEventListener('animationend', function handleClose() {
+    quizModal.removeEventListener('animationend', handleClose);
+    quizModal.style.display = 'none';
+    quizModal.style.animation = '';
+    document.body.classList.remove('modal-open');
+    document.documentElement.style.removeProperty('--scrollbar-comp');
+
+    Swal.fire({
+      toast: true,
+      position: 'top-end',
+      icon: 'info',
+      title: 'Your progress has been saved.',
+      timer: 1800,
+      showConfirmButton: false
+    });
+  });
+}
+  quizBtn.onclick = openQuiz;
+  if (closeQuizBtn) closeQuizBtn.onclick = closeQuiz;
+document.getElementById('submitQuizBtn').addEventListener('click', () => {
+  const answers = {
+    q1: "a", q2: "a", q3: "a", q4: "a", q5: "a",
+    q6: "a", q7: "a", q8: "a", q9: "a", q10: "a"
+  };
+
+  let score = 0;
+  let unanswered = 0;
+
+  for (const q in answers) {
+    const selected = document.querySelector(`input[name="${q}"]:checked`);
+    if (!selected) {
+      unanswered++;
+      continue;
+    }
+    if (selected.value === answers[q]) score++;
+  }
+
+  if (unanswered > 0) {
+    Swal.fire({
+      icon: 'info',
+      title: 'Incomplete',
+      text: `You still have ${unanswered} unanswered question(s).`
+    });
+    return;
+  }
+
+  const passingScore = 8;
+  if (score >= passingScore) {
+    Swal.fire({
+    icon: 'success',
+    title: '🎉 Quiz Passed!',
+    html: `
+      <p>You scored <b>${score}/10</b> — well done!</p>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-top:10px;">
+        <button id="backDashboardBtn" class="swal2-confirm swal2-styled" style="background:#03cae4;">⬅️ Return to Dashboard</button>
+        <button id="stayHereBtn" class="swal2-styled" style="background:#28a745;color:white;">🏠 Stay on this Page</button>
+      </div>
+    `,
+    showConfirmButton: false,
+    didOpen: () => {
+      const container = Swal.getHtmlContainer();
+      const moduleKey = 'phishing'; // ✅ your module key
+      const DASH_KEY = 'learning_module_state';
+      const raw = localStorage.getItem(DASH_KEY);
+      const dashState = raw ? JSON.parse(raw) : {};
+
+      // ✅ Mark Ad Attack module as completed
+      if (!dashState[moduleKey]) {
+        dashState[moduleKey] = { completed: [], simulationDone: false };
+      }
+      dashState[moduleKey].simulationDone = true;
+      if (!dashState[moduleKey].completed.includes('quiz')) {
+        dashState[moduleKey].completed.push('quiz');
+      }
+      localStorage.setItem(DASH_KEY, JSON.stringify(dashState));
+
+      // ✅ Notify other tabs/dashboards instantly
+      if (window.BroadcastChannel) {
+        const bc = new BroadcastChannel('learning_module_channel');
+        bc.postMessage({ type: 'module_quiz_done', module: moduleKey, progress: 100 });
+        bc.close();
+      }
+
+      // ✅ “Return to Dashboard” button
+      container.querySelector('#backDashboardBtn').addEventListener('click', () => {
+        Swal.fire({
+          title: 'Returning to Dashboard...',
+          icon: 'success',
+          showConfirmButton: false,
+          timer: 1200,
+          timerProgressBar: true,
+          willClose: () => {
+            window.location.href = 'dashboard.html';
+          }
+        });
+      });
+
+      // ✅ “Stay Here” button
+      container.querySelector('#stayHereBtn').addEventListener('click', () => {
+        Swal.close();
+
+        // Broadcast updated full progress (100%)
+        if (window.BroadcastChannel) {
+          const bc = new BroadcastChannel('learning_module_channel');
+          bc.postMessage({ type: 'module_progress_full', module: moduleKey, progress: 100 });
+          bc.close();
+        }
+
+        Swal.fire({
+          toast: true,
+          position: 'top-end',
+          icon: 'success',
+          title: '✅ Quiz completed — module progress updated to 100%',
+          showConfirmButton: false,
+          timer: 2000
+        });
+      });
+    }
+  });
+
+  // ✅ Reset cooldown + clear quiz
+  localStorage.removeItem(QUIZ_ATTEMPTS_KEY);
+  localStorage.removeItem(QUIZ_LOCK_KEY);
+  clearQuizProgress();
+
+} else {
+  // ❌ Failed logic
+  let attempts = parseInt(localStorage.getItem(QUIZ_ATTEMPTS_KEY) || 0) + 1;
+  const cooldownSeconds = attempts * 15;
+  const lockUntil = Date.now() + cooldownSeconds * 1000;
+  localStorage.setItem(QUIZ_ATTEMPTS_KEY, attempts);
+  localStorage.setItem(QUIZ_LOCK_KEY, lockUntil);
+  clearQuizProgress();
+  Swal.fire({
+    icon: 'warning',
+    title: 'Try Again Later',
+    html: `You scored ${score}/10. Wait ${cooldownSeconds} seconds before retrying.`
+  }).then(() => {
+    closeQuiz();
+    startCooldownCountdown(cooldownSeconds);
+  });
+}
+
+});
+// Restore cooldown if exists
+document.addEventListener('DOMContentLoaded', () => {
+  const lockUntil = parseInt(localStorage.getItem(QUIZ_LOCK_KEY) || 0);
+  const now = Date.now();
+  if (lockUntil > now) {
+    const remaining = Math.ceil((lockUntil - now) / 1000);
+    startCooldownCountdown(remaining);
+  }
+});
+
+// Countdown function
+function startCooldownCountdown(seconds) {
+  let remaining = seconds;
+
+  quizBtn.style.opacity = '0.6';
+  quizBtn.style.cursor = 'not-allowed';
+
+  const updateText = () => quizBtn.textContent = remaining;
+
+  updateText();
+  const timer = setInterval(() => {
+    remaining--;
+    updateText();
+    if (remaining <= 0) {
+      clearInterval(timer);
+      quizBtn.style.opacity = '1';
+      quizBtn.style.cursor = 'pointer';
+      quizBtn.textContent = '?';
+      localStorage.removeItem(QUIZ_LOCK_KEY);
+      clearQuizProgress();
+      localStorage.removeItem(QUIZ_PROGRESS_KEY);
+      const quizBody = quizModal.querySelector('.quiz-body');
+      if (quizBody) quizBody.scrollTop = 0;
+      Swal.fire({
+        toast: true,
+        position: 'top-end',
+        icon: 'info',
+        title: 'You can take the quiz again.',
+        timer: 1800,
+        showConfirmButton: false
+      });
+    }
+  }, 1000);
+}
+
+// Clear quiz progress
+function clearQuizProgress() {
+  localStorage.removeItem(QUIZ_PROGRESS_KEY);
+
+  // Clear selected answers in the DOM
+  for (let i = 1; i <= 10; i++) {
+    const checked = document.querySelector(`input[name="q${i}"]:checked`);
+    if (checked) checked.checked = false;
+  }
+}
+// Guided tour for PhishAtk simulation
+(function(){
+  const TOUR_FLAG = 'phish_tour_completed_v1';
+  const VISITED_OTP = 'phish_visited_otp_v1';
+  let tutorialLock = false; // prevents normal modal closing during tour
+  // --- Reset Simulation Logic ---
+  resetSimBtn.addEventListener('click', () => {
+    if (progressStage === 0) return;
+
+    Swal.fire({
+      title: 'Reset simulation?',
+      text: 'You will lose your progress and start over.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes',
+      confirmButtonColor: '#03cae4',
+      cancelButtonText: 'No'
+     
+    }).then((result) => {
+      if (result.isConfirmed) {
+
+        // Remove all related progress and tutorial flags
+      const keysToRemove = [
+        'phishProgress',
+        'phish_sim_completed',
+        'phish_tour_completed_v1',
+        'phish_tour_step',
+        'phish_expected_return',
+        'phish_visited_otp_v1',
+        'phish_return_time',
+        'netaware_demo_verified',
+        'phish_spam_count',
+        'phish_restore_disabled',
+        'phish_otp_done'
+      ];
+      keysToRemove.forEach(k => localStorage.removeItem(k));
+        Swal.fire({
+          toast: true,
+          position: 'top-end',
+          icon: 'success',
+          title: 'Simulation reset',
+          showConfirmButton: false,
+          timer: 1200,
+          timerProgressBar: true,
+          customClass: {
+            popup: 'swal-reset-popup'
+          }
+        });
+        setTimeout(() => {
+          // Reload without ?spam=99
+          const cleanUrl = window.location.origin + window.location.pathname;
+          window.location.href = cleanUrl;
+        }, 1300);
+      }
+    });
+  });
+
+  // create overlay element once
+  function makeOverlay(){
+    const ov = document.createElement('div');
+    ov.className = 'tour-overlay';
+    ov.style.display = 'none';
+    ov.id = 'tourOverlay';
+    ov.innerHTML = '<div class="tour-tooltip" id="tourTooltip" role="dialog" aria-modal="true"></div><div class="tour-arrow" id="tourArrow"></div>';
+    document.body.appendChild(ov);
+    return ov;
+  }
+
+  const overlay = document.getElementById('tourOverlay') || makeOverlay();
+  const tooltip = () => document.getElementById('tourTooltip');
+  const arrowEl = () => document.getElementById('tourArrow');
+
+  // position tooltip relative to target rect and preferred side
+  function positionTooltip(targetRect, side='right', margin=12){
+    const tip = tooltip();
+    const arrow = arrowEl();
+    const vw = document.documentElement.clientWidth;
+    const vh = document.documentElement.clientHeight;
+
+    // default center
+    let left = targetRect.right + margin;
+    let top = targetRect.top + (targetRect.height/2) - (tip.offsetHeight/2);
+
+    if(side === 'left'){
+      left = targetRect.left - margin - tip.offsetWidth;
+    } else if(side === 'top'){
+      left = targetRect.left + (targetRect.width/2) - (tip.offsetWidth/2);
+      top = targetRect.top - margin - tip.offsetHeight;
+    } else if(side === 'bottom'){
+      left = targetRect.left + (targetRect.width/2) - (tip.offsetWidth/2);
+      top = targetRect.bottom + margin;
+    }
+
+    // clamp to viewport
+    left = Math.min(Math.max(8, left), vw - tip.offsetWidth - 8);
+    top = Math.min(Math.max(8, top), vh - tip.offsetHeight - 8);
+
+    tip.style.left = Math.round(left) + 'px';
+    tip.style.top = Math.round(top) + 'px';
+
+    // position arrow near target
+    const arrowSize = 12;
+    arrow.style.left = Math.round(Math.min(Math.max( targetRect.left + targetRect.width/2 - (arrowSize/2), 8), vw - arrowSize - 8)) + 'px';
+    arrow.style.top = Math.round(Math.min(Math.max( targetRect.top + targetRect.height/2 - (arrowSize/2), 8), vh - arrowSize - 8)) + 'px';
+  }
+  window.addEventListener('resize', () => {
+    const activeTooltip = document.getElementById('tourTooltip');
+    const overlay = document.getElementById('tourOverlay');
+    if (!activeTooltip || overlay.style.display === 'none') return;
+
+    const currentTarget = document.querySelector('[data-tour-active="1"]');
+    if (!currentTarget) return;
+
+    const rect = currentTarget.getBoundingClientRect();
+    positionTooltip(rect, activeTooltip.dataset.side || 'right');
+  });
+  // show tooltip for a selector, text, side, then resolve when user clicks OK
+  function showTooltipFor(selector, title, text, side='right'){
+    return new Promise((resolve) => {
+      const el = document.querySelector(selector);
+      if(!el){
+        resolve();
+        return;
+      }
+
+      // Mark current element as active for tracking
+      document.querySelectorAll('[data-tour-active="1"]').forEach(e => e.removeAttribute('data-tour-active'));
+      el.setAttribute('data-tour-active', '1');
+
+      const rect = el.getBoundingClientRect();
+      overlay.style.display = 'block';
+      overlay.scrollTop = 0;
+      const tip = tooltip();
+      tip.dataset.side = side;
+      tip.innerHTML = `<div class="title">${title}</div><div class="body">${text}</div><div style="text-align:right"><button class="ok" id="tourOkBtn">OK</button></div>`;
+      tip.style.left = '0px'; tip.style.top = '0px';
+      tip.style.display = 'block';
+      setTimeout(()=> {
+        positionTooltip(rect, side);
+      }, 10);
+
+      tutorialLock = true;
+      const ok = document.getElementById('tourOkBtn');
+      ok.focus();
+      ok.onclick = () => {
+        overlay.style.display = 'none';
+        tutorialLock = false;
+        el.removeAttribute('data-tour-active');
+        resolve();
+      };
+    });
+  }
+  // start tour sequence
+  async function startPhishTour(force=false){
+    if(localStorage.getItem(TOUR_FLAG) && !force) return;
+    // welcome
+    await Swal.fire({ title:'Welcome', text:'Welcome to the Phish Attack simulation. Here you will learn how phishing works and how to spot it.', icon:'info', confirmButtonText:'OK', confirmButtonColor: '#03cae4' });
+
+    // story
+    await Swal.fire({ title:'Scenario', text:'You received an email that looks like it came from GCash. Follow the steps to inspect the message and see what happens when you click links.', icon:'question', confirmButtonText:'OK', confirmButtonColor: '#03cae4' });
+
+    // tooltip pointing to the email container
+    await showTooltipFor('.email-container', 'This is the email', 'This message pretends to be from GCash. Notice the sender email address and the restore button.', 'left');
+
+    // tooltip pointing to the Restore button
+    await showTooltipFor('.message-body a', 'Restore link', 'Clicking this link leads to a fake verification page. Try clicking it to continue to the OTP demo.', 'bottom');
+    // if user clicks the link, they will navigate to otp.html.
+    localStorage.setItem('phish_tour_step', 'after_restore');
+    // the user may navigate to otp.html. If they return, continue tour.
+    const restoreBtn = document.querySelector('.message-body a');
+    if (restoreBtn) {
+      restoreBtn.addEventListener('click', () => {
+        const progress = parseInt(localStorage.getItem('phishProgress') || '0', 10);
+        // Only expect return if progress is still 0 (hasn't done OTP yet)
+        if (progress === 0) {
+          localStorage.setItem('phish_expected_return', '1');
+        }
+      });
+    }
+    // mark tour started to avoid immediate repeat
+    localStorage.setItem(TOUR_FLAG, 'started');
+  }
+
+  // continue tour after returning from OTP page
+  async function continueAfterOtp(){
+    if(localStorage.getItem('phish_expected_return') !== '1') return;
+    // clear flag so we don't repeat
+    localStorage.removeItem('phish_expected_return');
+
+    // small delay so UI is ready
+    await new Promise(r => setTimeout(r, 700));
+
+    // tooltip pointing to spam menu
+    await showTooltipFor('#spamMenu', 'Spam folder', 'Looks like your spam folder has new items. Click Spam to inspect suspicious emails.', 'right');
+    const restoreBtn = document.querySelector('.message-body a');
+    if (restoreBtn) {
+      restoreBtn.disabled = true;
+      restoreBtn.style.pointerEvents = 'none';
+      restoreBtn.style.opacity = '0.6';
+      restoreBtn.style.cursor = 'not-allowed';
+      restoreBtn.title = 'This action is disabled after completing OTP verification.';
+      localStorage.setItem('phish_restore_disabled', '1');
+      localStorage.setItem('phishProgress', '1');
+    }
+    // when user clicks spamMenu they open spam list. we want to show tooltip pointing inside the spam modal
+    await waitForSpamOpenAndShowListTip();
+  }
+
+  // wait for user to open spam modal then show tooltip pointing to spam list
+  function waitForSpamOpenAndShowListTip(){
+    return new Promise((resolve) => {
+      // If spam modal already open, show immediately
+      if(document.getElementById('spamModal') && document.getElementById('spamModal').style.display === 'flex'){
+        // show tooltip anchored to spam box content
+        setTimeout(async ()=> {
+          await showTooltipFor('.spam-box', 'Spam list', 'This is your spam folder. Suspicious messages collect here.', 'bottom');
+          await showTooltipFor('#closeSpamBtn', 'Close the spam list', 'After checking the suspicious emails, click Close to return to your inbox.', 'top');
+          localStorage.setItem('phish_tour_completed_v1', '1');
+          resolve();
+        }, 200);
+        return;
+      }
+    // otherwise wait for spamModal to open
+    const observer = new MutationObserver(async (mutations, obs) => {
+      const m = document.getElementById('spamModal');
+      if(m && m.style.display === 'flex'){
+        obs.disconnect();
+        // prevent clicking overlay to close during tooltip
+        tutorialLock = true;
+        await new Promise(r => setTimeout(r, 120));
+        await showTooltipFor('.spam-box', 'Spam list', 'This is your spam folder. Suspicious messages collect here.', 'bottom');
+        await showTooltipFor('#closeSpamBtn', 'Close the spam list', 'After checking the suspicious emails, click Close to return to your inbox.', 'top');
+        localStorage.setItem('phish_tour_completed_v1', '1');
+        tutorialLock = false;
+        resolve();
+      }
+    });
+    observer.observe(document.body, { attributes: true, subtree: true, childList: true });
+    });
+  }
+
+  // hook into spam modal close so it ignores outside clicks during tour
+  const spamModal = document.getElementById('spamModal');
+  if(spamModal){
+    // override global window click handler by adding ours first
+    window.addEventListener('click', (e) => {
+      if(tutorialLock && e.target === spamModal){
+        // ignore clicks on overlay while tutorial lock is active
+        e.stopPropagation();
+        e.preventDefault();
+        return;
+      }
+    }, true);
+  }
+
+  // monitor navigation. When user returns from otp.html, show spam tooltip after slight delay
+  window.addEventListener('focus', () => {
+    const flag = localStorage.getItem('phish_expected_return');
+    if (flag === '1') {
+      // delay longer to ensure DOM is fully rendered
+      setTimeout(() => {
+        // double check elements are ready
+        const spamMenu = document.getElementById('spamMenu');
+        if (!spamMenu) {
+          // retry after short delay if DOM not ready yet
+          setTimeout(() => continueAfterOtp(), 500);
+        } else {
+          continueAfterOtp();
+        }
+      }, 800);
+    }
+  });
+
+// auto-start tour on first visit
+window.addEventListener('load', () => {
+  // wait until DOM element exists
+  const readyCheck = setInterval(() => {
+    const restoreBtn = document.querySelector('.message-body a');
+    const spamMenuEl = document.getElementById('spamMenu'); // used later
+    if (!restoreBtn) return; // keep waiting
+    clearInterval(readyCheck);
+    // read state
+    const progress = parseInt(localStorage.getItem('phishProgress') || '0', 10);
+    const otpDone = localStorage.getItem('phish_otp_done') === '1';
+    const tourStepAfterRestore = localStorage.getItem('phish_tour_step') === 'after_restore';
+    const tourCompleted = localStorage.getItem('phish_tour_completed_v1') === '1';
+
+    // Defensive cleanup: if some "disabled" flag exists but progress is 0 and otp not done, remove it.
+    if (!otpDone && progress === 0 && localStorage.getItem('phish_restore_disabled') === '1') {
+      localStorage.removeItem('phish_restore_disabled');
+    }
+
+    // Disable only when we know OTP was completed or progress indicates step 1 or tour completed.
+    if (progress >= 1 || (otpDone && tourStepAfterRestore) || tourCompleted) {
+      restoreBtn.disabled = true;
+      restoreBtn.style.pointerEvents = 'none';
+      restoreBtn.style.opacity = '0.6';
+      restoreBtn.style.cursor = 'not-allowed';
+      restoreBtn.title = 'This action is disabled after completing OTP verification.';
+      // keep the persistent flag set only when this is a genuine disable
+      localStorage.setItem('phish_restore_disabled', '1');
+    } else {
+      // Force-enable when user is still at step 0
+      restoreBtn.disabled = false;
+      restoreBtn.style.pointerEvents = 'auto';
+      restoreBtn.style.opacity = '1';
+      restoreBtn.style.cursor = 'pointer';
+      restoreBtn.title = '';
+      // remove any stale disable flag
+      localStorage.removeItem('phish_restore_disabled');
+    }
+
+    // handle case: user completed OTP previously and returns later without ?spam param
+    if (
+      otpDone &&
+      tourStepAfterRestore &&
+      !localStorage.getItem('phish_tour_completed_v1')
+    ) {
+      const savedSpam = parseInt(localStorage.getItem('phish_spam_count') || 0);
+      if (savedSpam > 0 && spamMenuEl) {
+        spamMenuEl.innerHTML = `Spam <span>(${savedSpam > 99 ? "99+" : savedSpam})</span>`;
+        spamMenuEl.style.color = "#d93025";
+      }
+      localStorage.setItem('phish_expected_return', '1');
+      setTimeout(() => continueAfterOtp(), 700);
+    }
+
+    // --- Re-run spam tooltip sequence if progress is 1/2 ---
+    const spamDone = localStorage.getItem('phish_spam_done');
+    if ((progress === 1 || progress === '1') && spamDone !== '1') {
+      setTimeout(async () => {
+        try {
+          await showTooltipFor('#spamMenu', 'Spam folder', 'Looks like your spam folder has new items. Click Spam to inspect suspicious emails.', 'right');
+          const spamMenu = document.getElementById('spamMenu');
+          if (spamMenu) {
+            spamMenu.addEventListener('click', async () => {
+              await waitForSpamOpenAndShowListTip();
+              localStorage.setItem('phish_spam_done', '1');
+            }, { once: true });
+          }
+        } catch (err) {
+          console.error('Spam tooltip rerun failed:', err);
+        }
+      }, 1200);
+    }
+
+    // if tour completed, keep restore button locked and stop
+    if (tourCompleted) {
+      if (restoreBtn) {
+        restoreBtn.disabled = true;
+        restoreBtn.style.pointerEvents = 'none';
+        restoreBtn.style.opacity = '0.6';
+        restoreBtn.style.cursor = 'not-allowed';
+        restoreBtn.title = 'This action is disabled after completing the simulation.';
+      }
+      return;
+    }
+
+    // only start if not completed
+    if (!localStorage.getItem(TOUR_FLAG)) {
+      startPhishTour();
+    } else {
+      // if user already started but visited otp and returned, continue
+      if (localStorage.getItem('phish_expected_return') === '1') {
+        continueAfterOtp();
+      }
+    }
+  }, 150);
+});
+
+// expose helper to force start (for debugging)
+window.startPhishTour = startPhishTour;
+})();
+window.addEventListener('load', () => {
+  const menuToggle = document.getElementById('menuToggle');
+  const sidebar = document.getElementById('sidebar');
+
+  if (menuToggle && sidebar) {
+    menuToggle.addEventListener('click', () => {
+      sidebar.classList.toggle('open');
+    });
+  }
+});
+</script>
+</body>
+</html>

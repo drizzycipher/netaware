@@ -1,0 +1,1035 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>NetAware — SQLi Simulation</title>
+ <link rel="icon" type="image/png" href="photos/headerlogo.png">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<!-- SweetAlert2 for nicer popups -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<style>
+  :root{ --accent:#03cae4; --muted:#475d66; --card:#fff; --bg:#f7fcff; }
+  body { font-family: Inter, system-ui, Arial; background: linear-gradient(180deg,var(--bg),#eef9ff); color:var(--muted); padding:0; margin:0; }
+  .quick-quiz{
+color: #03cae4;
+  }
+  .header { background:#1c1f2b; border-bottom: 4px solid #00c7d4; padding:12px 24px; display:flex; align-items:center; gap:12px; box-shadow:0 2px 6px rgba(3,202,228,0.05); position:sticky; top:0; z-index:100; max-width: 2000px;}
+  .logo-circle { width:50px; height:50px; border-radius:50%; background:#03cae4; display:flex; align-items:center; justify-content:center; }
+  .logo-circle img { width:28px; height:28px; object-fit:contain; }
+  .forum-name { font-size:1.4rem; font-weight:700; color:#fff; }
+
+  .page { max-width:1200px; margin:20px auto; padding:0 20px; }
+  .forum { background:var(--card); padding:20px; border-radius:12px; box-shadow:0 10px 30px rgba(3,202,228,0.08); display:flex; flex-direction:column; }
+
+  .story-box { background:#f0faff; border-left:5px solid var(--accent); padding:14px; border-radius:10px; margin-bottom:20px; }
+  .story-box h5 { margin:0 0 6px; color:#03cae4; }
+  .post { border-radius:10px; padding:14px; background:#fbfeff; border:1px solid rgba(3,202,228,0.1); margin-bottom:12px; transition:all 0.2s ease; }
+  .post:hover { background:#f4fbff; }
+  .meta { font-size:0.85rem; color:#567; margin-bottom:4px; font-weight:500; }
+
+  .panel { background:#fff; border-radius:10px; padding:14px; border:1px solid rgba(3,202,228,0.06); box-shadow:0 8px 20px rgba(3,202,228,0.05); margin-bottom:14px; }
+  .panel h6 { font-size:1rem; font-weight:600; color:#03485f; margin-bottom:8px; }
+
+  pre.simdb { background:#0b1b24; color:#bfeefb; padding:10px; border-radius:8px; overflow:auto; font-size:0.92rem; }
+  .leak { background:#fff6f6; border-left:4px solid #ff6b6b; padding:10px; border-radius:6px; }
+  .hint { background:#f3fbff; border-left:4px solid var(--accent); padding:8px; border-radius:6px; margin-bottom:8px; }
+
+  .btn-accent { background:var(--accent); color:#fff; border:none; border-radius:8px; padding:8px 14px; transition:0.2s; }
+  .btn-accent:hover { background:#02b4ca; }
+  .cmd-box { display:flex; align-items:center; gap:6px; margin-bottom:6px; }
+  .cmd { font-family: monospace; background:#eef9ff; padding:4px 8px; border-radius:6px; border:1px solid #cce; }
+  .copy-btn { background:#03cae4; border:none; color:#fff; font-size:0.8rem; border-radius:4px; padding:2px 6px; cursor:pointer; transition:0.2s; }
+  .copy-btn:hover { background:#02b4ca; }
+
+  #progressContainer { display:none; margin-top:10px; text-align:center; }
+  .progress-text { font-size:0.9rem; font-weight:600; margin-bottom:6px; text-align:center; }
+  .small { font-size:0.85rem; }
+  .muted { color:#6b7a80; }
+
+  /* modal body scroll */
+  .modal-body { max-height:60vh; overflow:auto; }
+  .quiz-question { margin-bottom:12px; }
+  #startQuizBtn, #resetSimBtn {
+  background-color: #03cae4;
+  border: none;
+  color: white;
+  padding: 10px 18px;
+  border-radius: 6px;
+  margin: 5px;
+  font-weight: 600;
+  transition: background 0.3s ease;
+}
+#startQuizBtn:hover, #resetSimBtn:hover {
+  background-color: #02b3cb;
+}
+.profile-pic {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 8px;
+  border: 2px solid #03cae4;
+}
+.meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: #567;
+  margin-bottom: 4px;
+  font-weight: 500;
+}
+#simButtons {
+  display: flex;
+  justify-content: center;   /* centers horizontally */
+  align-items: center;       /* vertically aligned */
+  flex-wrap: wrap;           /* ensures alignment even if screen is small */
+  gap: 10px;
+  margin-top: 12px;
+}
+
+#simButtons button {
+  background-color: var(--accent);
+  color: white;
+  font-weight: 600;
+  padding: 10px 18px;
+  border-radius: 6px;
+  border: none;
+  transition: background 0.3s ease;
+  min-width: 160px;          /* ensures same width for all three buttons */
+  text-align: center;
+}
+
+#simButtons button:hover {
+  background-color: #02b3cb;
+}
+
+.custom-dashboard-btn {
+  background-color: #03cae4 !important; /* teal accent color */
+  color: white !important;
+  border: none !important;
+  border-radius: 8px !important;
+  padding: 8px 16px !important;
+  font-weight: 600 !important;
+  transition: background 0.3s;
+}
+
+.custom-dashboard-btn:hover {
+  background-color: #029bb3 !important; /* darker on hover */
+}
+
+
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo-circle"><img src="netaware-logo.png" alt="Logo"></div>
+  <div class="forum-name">NetAware Discussion Forum</div>
+</div>
+
+<div class="page container">
+  <div class="forum">
+
+    <div class="story-box">
+      <h5>📘 <strong>Story</strong></h5>
+      <p>Imagine you just joined an online tech forum. Members are discussing site safety, and someone suspects that the forum might have a weakness. As the discussion unfolds, you’ll <b>simulate what happens</b> if a hacker tries a simple SQL Injection attack.</p>
+    </div>
+
+    <div class="panel">
+      <h6>Simulation Instructions</h6>
+      <div class="hint"><b>How to Begin:</b>
+        <ol>
+          <li>Copy one of the <b>example commands</b> below or type it manually into the comment box.</li>
+          <li>Click <b>Post Comment</b> to simulate what would happen on a vulnerable site.</li>
+          <li>Try at least <b>3 different commands</b> to unlock the quiz at the end!</li>
+        </ol>
+      </div>
+
+      <label class="form-label"><b>Example Commands:</b></label>
+      <div class="cmd-box"><code class="cmd">SELECT * FROM comments</code><button class="copy-btn" onclick="copyCmd('SELECT * FROM comments')">Copy</button></div>
+      <div class="cmd-box"><code class="cmd">UNION SELECT username, email FROM users</code><button class="copy-btn" onclick="copyCmd('UNION SELECT username, email FROM users')">Copy</button></div>
+      <div class="cmd-box"><code class="cmd">1 OR 1=1</code><button class="copy-btn" onclick="copyCmd('1 OR 1=1')">Copy</button></div>
+      <div class="cmd-box"><code class="cmd">' OR 'a'='a</code><button class="copy-btn" onclick="copyCmd(`' OR 'a'='a`)">Copy</button></div>
+      <div class="cmd-box"><code class="cmd">'; DROP TABLE users; --</code><button class="copy-btn" onclick="copyCmd(`'; DROP TABLE users; --`)">Copy</button></div>
+
+      <div id="progressContainer">
+        <div class="progress-text" id="progressText">Progress: 0/3</div>
+        <div class="progress mb-2">
+          <div id="progressBar" class="progress-bar bg-info" style="width: 0%"></div>
+        </div>
+        <div id="simButtons" style="display:flex; gap:10px; justify-content:center; margin-top:10px;">
+  <button type="button" id="resetStageBtn" class="btn-accent" disabled>Reset Stage</button>
+  <button id="startQuizBtn" class="btn btn-accent" style="display:none;">Start Quiz</button>
+  <button type="button" id="resetSimBtn" class="btn-accent" disabled>Reset Simulation</button>
+</div>
+      </div>
+    </div>
+    <div class="post">
+  <div class="meta">
+    <img src="photos/Shai.jpg" alt="Shai" class="profile-pic">
+    <strong>Shai</strong> • 2 hours ago
+  </div>
+  <div>I noticed this site stores user info. Is it really safe?</div>
+</div>
+
+<div class="post">
+  <div class="meta">
+    <img src="photos/Jdub.jpg" alt="Jdub" class="profile-pic">
+    <strong>Jdub</strong> • 1 hour ago
+  </div>
+  <div>We’re not sure yet — please don’t post sensitive info here.</div>
+</div>
+
+<div class="post">
+  <div class="meta">
+    <img src="photos/Lu.jpg" alt="Luguentz" class="profile-pic">
+    <strong>Luguentz</strong> • 40 mins ago
+  </div>
+  <div>It looks like we can trick the site into showing hidden data!</div>
+</div>
+
+    <div id="commentPanel" class="panel mt-auto">
+      <h6>💬 Add a Comment (Simulated Forum)</h6>
+      <p class="small muted">Try typing a comment here. If you enter a SQL Injection command, the simulation will show what happens.</p>
+      <textarea id="commentBox" class="form-control mb-2" rows="2" placeholder="Write your comment here..."></textarea>
+      <button id="postCommentBtn" class="btn-accent">Post Comment</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- QUIZ MODAL (no close button; static backdrop & keyboard disabled when shown) -->
+<div class="modal fade" id="quizModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content p-3">
+      <div class="modal-header">
+        <h5 class="modal-title quick-quiz">🧠 Quick Quiz: Test Your Knowledge</h5>
+      </div>
+      <div class="modal-body">
+        <!-- 10 questions -->
+      <div class="quiz-question">
+  <b>1. Scenario: Look at the image. If the clerk (website) follows every note exactly, what could happen if a sneaky note is handed in?</b><br>
+  <img src="photos/question_1.png" alt="SQL Injection Example" style="width:250px; height:auto;" class="my-2"><br>
+  <h6 style="margin-top: 5px;margin-bottom: 15px;font-size: 12px;"><i>Source: OpenAI. (2025). Image generated using ChatGPT based on user prompt.</i></h6>
+  <label><input type="radio" name="q1" value="b"> The site applies modern input filtering and discards the note safely.</label><br>
+  <label><input type="radio" name="q1" value="a"> The attacker could view or modify private data by turning the note into a command.</label><br>
+  <label><input type="radio" name="q1" value="c"> Only the attacker’s own records are affected because the site limits results to the requester.</label><br>
+  <label><input type="radio" name="q1" value="d"> The note will be logged and automatically quarantined by the CMS.</label>
+</div>
+<hr>
+
+<div class="quiz-question">
+  <b>2. Recall: What is SQL Injection?</b><br>
+  <label><input type="radio" name="q2" value="b"> A defensive pattern that uses parameterized queries to stop unauthorized commands.</label><br>
+  <label><input type="radio" name="q2" value="a"> The practice of letting user text build queries directly so the DB can be instructed via input.</label><br>
+  <label><input type="radio" name="q2" value="c"> A client-side bug where browser scripts manipulate database contents.</label><br>
+  <label><input type="radio" name="q2" value="d"> An encryption method for securing SQL traffic between app and DB.</label>
+</div>
+<hr>
+
+<div class="quiz-question">
+  <b>3. Scenario: In a website, if user input is directly sent to the database without checks, what mistake is the website making?</b><br>
+  <label><input type="radio" name="q3" value="b"> Automatically duplicating rows to match user input.</label><br>
+  <label><input type="radio" name="q3" value="a"> Treating untrusted input as executable SQL rather than validated data.</label><br>
+  <label><input type="radio" name="q3" value="c"> Caching user input on the client instead of the server.</label><br>
+  <label><input type="radio" name="q3" value="d"> Enforcing strict column typing which blocks most attacks.</label>
+</div>
+<hr>
+
+<div class="quiz-question">
+  <b>4. Scenario: The main mistake the website makes when an injection succeeds is using ______ input as part of its database command.</b><br>
+  
+  <label><input type="radio" name="q4" value="b"> formatted</label><br>
+  <label><input type="radio" name="q4" value="c"> compressed</label><br>
+  <label><input type="radio" name="q4" value="d"> authenticated</label><br>
+  <label><input type="radio" name="q4" value="a"> unsanitized</label>
+</div>
+<hr>
+
+<div class="quiz-question">
+  <b>5. Scenario: A user types unusual text in a website form and sees data from other users. What likely happened?</b><br>
+  <label><input type="radio" name="q5" value="a"> A tautology-based injection made the WHERE clause always true, exposing rows.</label><br>
+  <label><input type="radio" name="q5" value="b"> The browser concatenated multiple AJAX responses into one visible list.</label><br>
+  <label><input type="radio" name="q5" value="c"> The server switched to a read-replica with stale public data.</label><br>
+  <label><input type="radio" name="q5" value="d"> The form invoked a client-side template that masked other users’ results as yours.</label>
+</div>
+<hr>
+
+<div class="quiz-question">
+  <b>6. Scenario: There is a discussion forum below, refer to the image the comment box accepts whatever users type and the simulation panel shows example commands like <code>1 OR 1=1</code> and <code>UNION SELECT</code>. If a visitor pastes <code>1 OR 1=1</code> into the comment box and the site concatenates input directly into SQL, what will the simulated query most likely do?</b><br>
+  <img src="photos/POP-UP.png" alt="SQL Injection Example" style="width:350px; height:auto;" class="my-2"><br>
+  <h6 style="margin-top: 5px;margin-bottom: 15px;font-size: 12px;"><i>Source: Image taken from the simulation.</i></h6>
+  <label><input type="radio" name="q6" value="a"> Make the WHERE clause always true and return many or all rows from the table.</label><br>
+  <label><input type="radio" name="q6" value="c"> Cause the DB engine to reject the query and roll back without showing results.</label><br>
+  <label><input type="radio" name="q6" value="b"> Return only the visitor’s own comments because the site filters duplicates.</label><br>
+  <label><input type="radio" name="q6" value="d"> Translate the input to a safe literal and display it without changing results.</label>
+</div>
+<hr>
+
+<div class="quiz-question">
+  <b>7. Recall: To prevent attackers from running unexpected commands, websites should always treat user input as ______ instead of executable instructions.</b><br>
+  <label><input type="radio" name="q7" value="b"> directives</label><br>
+  <label><input type="radio" name="q7" value="c"> commands</label><br>
+  <label><input type="radio" name="q7" value="a"> data</label><br>
+  <label><input type="radio" name="q7" value="d"> scripts</label>
+</div>
+<hr>
+
+<div class="quiz-question">
+  <b>8. Recall: What happens when a SQL injection attack is successful?</b><br>
+  <label><input type="radio" name="q8" value="b"> The browser upgrades all connections to HTTPS automatically.</label><br>
+  <label><input type="radio" name="q8" value="c"> Database indexes are rebuilt for optimization.</label><br>
+  <label><input type="radio" name="q8" value="d"> The site’s UI theme changes to indicate an attack.</label><br>
+  <label><input type="radio" name="q8" value="a"> The application concatenates raw user input into SQL causing unintended queries that can reveal or change data.</label>
+</div>
+<hr>
+
+<div class="quiz-question">
+  <b>9. Scenario: You type <code>'; DROP TABLE users; --</code> into the comment box and post it — in the simulation this demonstrates a ______ attack that can remove or modify database contents.</b><br>
+  
+  <label><input type="radio" name="q9" value="b"> investigative</label><br>
+  <label><input type="radio" name="q9" value="a"> destructive</label><br>
+  <label><input type="radio" name="q9" value="c"> performance</label><br>
+  <label><input type="radio" name="q9" value="d"> formatting</label>
+</div>
+<hr>
+
+<div class="quiz-question">
+  <b>10. Recall: In the simulation, why would an input like <code>UNION SELECT username, email FROM users</code> be dangerous if the site is vulnerable?</b><br>
+  <label><input type="radio" name="q10" value="b"> Because it forces the DB to cache queries indefinitely.</label><br>
+  <label><input type="radio" name="q10" value="c"> Because it converts all strings to encrypted tokens before display.</label><br>
+  <label><input type="radio" name="q10" value="d"> Because it automatically sanitizes the rest of the query when present.</label><br>
+  <label><input type="radio" name="q10" value="a"> Because it can combine results from another table and expose sensitive columns to the page output.</label>
+</div>
+
+
+        <div id="quizResult" class="mt-3 small text-center"></div>
+      </div>
+      <div class="modal-footer">
+        <button id="closeQuizBtn" class="btn btn-secondary">Close</button>
+        <button id="submitQuizBtn" class="btn-accent">Submit Quiz</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+
+   
+document.addEventListener("DOMContentLoaded", () => {
+  const DASH_KEY = 'learning_module_state';
+  const moduleKey = 'sql'; // ✅ make sure this matches your dashboard key
+  const progressData = JSON.parse(localStorage.getItem(DASH_KEY) || "{}");
+
+  // ✅ Check if the module exists in localStorage
+  const module = progressData[moduleKey];
+
+  // ✅ If module data doesn’t exist or lessons are incomplete
+  if (!module || !module.completed || module.completed.length < 3) {
+    Swal.fire({
+      icon: 'warning',
+      title: '⚠️ Access Denied',
+      html: `
+        <p>You need to complete all lessons first before trying the simulation.</p>
+        <p><b>Required:</b> Lesson 1, Lesson 2, and Lesson 3</p>
+      `,
+      confirmButtonText: 'Go Back to Dashboard',
+      customClass: {
+        confirmButton: 'custom-dashboard-btn'
+      }
+    }).then(() => {
+      window.location.href = 'dashboard.html';
+    });
+  }
+});
+
+/* ---------- persistence keys & helpers ---------- */
+const STORAGE_KEY = 'sqli_sim_state_v1';
+function saveState(stateObj) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(stateObj));
+  } catch(e){ console.warn('Could not save state', e); }
+}
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch(e){ return null; }
+}
+const QUIZ_PROGRESS_KEY = "quiz_progress_v1";
+
+/* Save answers whenever a radio is selected */
+/* ---------- (REPLACEMENT) Save answers ONLY when user clicks Close ---------- */
+/* Helper: collect current quiz selections into an object */
+function collectCurrentQuizSelections(){
+  const answers = {};
+  for(let i=1;i<=10;i++){
+    const sel = document.querySelector(`input[name="q${i}"]:checked`);
+    if(sel) answers["q"+i] = sel.value;
+  }
+  return answers;
+}
+
+/* Restore saved quiz answers */
+function restoreQuizProgress(){
+  const saved = localStorage.getItem(QUIZ_PROGRESS_KEY);
+  if(!saved) return;
+  const answers = JSON.parse(saved);
+  for(const [q,val] of Object.entries(answers)){
+    const el = document.querySelector(`input[name="${q}"][value="${val}"]`);
+    if(el) el.checked = true;
+  }
+}
+
+/* Modify Close button: save current answers only when Close is clicked */
+document.getElementById("closeQuizBtn").addEventListener("click", () => {
+  const answers = collectCurrentQuizSelections();
+  try {
+    localStorage.setItem(QUIZ_PROGRESS_KEY, JSON.stringify(answers));
+  } catch(e) {
+    console.warn('Could not save quiz progress', e);
+  }
+
+  if(quizModal){
+    quizModal.hide();
+    Swal.fire({
+      toast:true,
+      position:'top-end',
+      icon:'info',
+      title:'Your progress has been saved.',
+      timer:1800,
+      showConfirmButton:false
+    });
+  }
+});
+
+/* Modify openQuizIfAllowed() to restore progress */
+function openQuizIfAllowed() {
+  const now = Date.now();
+  if (now < lockUntil) {
+    let remaining = Math.ceil((lockUntil - now) / 1000);
+
+    Swal.fire({
+      title: '⏳ Please Wait',
+      html: `You must wait <b id="cooldownTime">${remaining}</b> second(s) before retrying the quiz.`,
+      icon: 'info',
+      allowOutsideClick: false,
+      showConfirmButton: false,
+      didOpen: () => {
+        const timeEl = Swal.getHtmlContainer().querySelector('#cooldownTime');
+
+        // Update the number in the alert every second
+        const timerInterval = setInterval(() => {
+          const nowInner = Date.now();
+          remaining = Math.ceil((lockUntil - nowInner) / 1000);
+
+          if (remaining <= 0) {
+            clearInterval(timerInterval);
+            Swal.close();
+            lockUntil = 0;
+            persistState();
+            updateStartButtonLockLabel();
+          } else {
+            timeEl.textContent = remaining;
+            updateStartButtonLockLabel(); // keeps Start Quiz button synced
+          }
+        }, 1000);
+
+        // Clear when alert is closed manually
+        Swal.getPopup().addEventListener('swal-close', () => {
+          clearInterval(timerInterval);
+        });
+      }
+    });
+    return;
+  }
+
+  // ✅ If not locked, open quiz as normal
+  restoreQuizProgress();
+  document.getElementById('quizResult').textContent = '';
+  quizModal = new bootstrap.Modal(
+    document.getElementById('quizModal'),
+    { backdrop: 'static', keyboard: false }
+  );
+  quizModal.show();
+}
+/* ---------- initial data (same as before) ---------- */
+const exactCommands = {
+  "select * from comments": {
+    leak:
+`id | username | email
+---+----------+-----------------
+1  | shai     | shaivonte@gmail.com
+2  | luguentz | ludort@gmail.com`,
+    remediation:
+`This command asks the database to show everything from the comments section — not just what’s supposed to be visible. 
+It’s like opening every drawer in an office instead of just the one labeled “Public Comments.” 
+You end up seeing private contact details that were never meant to be shared.`},
+
+  "union select username, email from users": {
+    leak:
+`username | email
+---------+-----------------
+shai     | shaivonte@gmail.com
+luguentz | ludort@gmail.com`,
+    remediation:
+`This command combines two sets of data — the normal comments and the private user accounts — into one list. 
+It’s like mixing a guestbook with the company’s employee records so anyone reading the page can now see both. 
+It shows how a small trick can merge private information with public data.`},
+
+  "1 or 1=1": {
+    leak:
+`id | username | email
+---+----------+-----------------
+1  | shai     | shaivonte@gmail.com
+2  | luguentz | ludort@gmail.com`,
+    remediation:
+`This command takes advantage of a simple truth — “1 equals 1” is always true. 
+It forces the database to skip checking for conditions and instead show *everything*. 
+Imagine someone saying to a security guard, “Let me in because I always belong here,” and the guard simply agrees without checking their ID.`},
+
+  "' or 'a'='a": {
+    leak:
+`username | password
+---------+----------
+admin     | ****** 
+guest     | ******`,
+    remediation:
+`This is a login trick where the attacker says something that always turns out to be true, just like saying “A equals A.” 
+It fools the system into thinking the password check passed, even when it didn’t. 
+Think of it like a locked door that opens because someone says a magic phrase that the door believes without question.`},
+
+  "'; drop table users; --": {
+    leak:
+`⚠️ Users table deleted (simulated)
+No records remain.`,
+    remediation:
+`This is a destructive command that tells the database to erase everything — as if someone walked into a records room and shredded all the files. 
+It shows how dangerous SQL Injection can be, because a single line of text can wipe out an entire list of users. 
+It’s like pressing “Delete All Contacts” on your phone by accident — except it’s your company’s entire database.`}
+};
+
+const forum = document.querySelector('.forum');
+let triedCommands = new Set();   // set of string keys
+let quizAttempts = 0;
+let lockUntil = 0;               
+let quizModal = null;
+let cooldownInterval = null;
+
+// ✅ ADDED
+let shownSimulationSuccess = false;
+
+/* ---------- load saved state if present ---------- */
+(function initFromStorage(){
+  const saved = loadState();
+  if(saved){
+    if(Array.isArray(saved.tried)) {
+      saved.tried.forEach(k => triedCommands.add(k));
+    }
+    if(typeof saved.quizAttempts === 'number') quizAttempts = saved.quizAttempts;
+    if(typeof saved.lockUntil === 'number') lockUntil = saved.lockUntil;
+    if(typeof saved.shownSimulationSuccess === 'boolean') shownSimulationSuccess = saved.shownSimulationSuccess;
+
+    // ✅ Restore user and leak comments
+    if(saved.commentsHTML){
+      const forum = document.querySelector('.forum');
+      forum.innerHTML = saved.commentsHTML;
+    }
+  }
+})();
+
+// Ensure correct button state on page load
+document.addEventListener("DOMContentLoaded", () => {
+  updateProgress(); // will properly enable/disable Reset
+});
+
+/* ---------- UI helpers ---------- */
+function updateProgress(){
+  const progressContainer=document.getElementById('progressContainer');
+  const progressBar=document.getElementById('progressBar');
+  const progressText=document.getElementById('progressText');
+  const startBtn=document.getElementById('startQuizBtn');
+  const resetBtn=document.getElementById('resetSimBtn');
+
+  let count = triedCommands.size;
+  if (count > 3) count = 3;
+
+  progressContainer.style.display='block';
+  progressText.textContent=`Progress: ${count}/3`;
+  progressBar.style.width=`${(count/3)*100}%`;
+
+  // ✅ Enable or disable Reset Simulation
+  const resetSim = document.getElementById('resetSimBtn');
+const resetStage = document.getElementById('resetStageBtn');
+
+if (count > 0) {
+  resetSim.disabled = false;
+  resetStage.disabled = false; // ✅ enable reset stage when there’s progress
+} else {
+  resetSim.disabled = true;
+  resetStage.disabled = true;
+}
+
+
+  // ✅ Show Start Quiz only after 3 progress
+  if (count >= 3){
+    startBtn.style.display = 'inline-block';
+    updateStartButtonLockLabel();
+  } else {
+    startBtn.style.display = 'none';
+  }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  // Attach event listener safely
+  const resetStage = document.getElementById('resetStageBtn');
+  if (resetStage) {
+    resetStage.addEventListener('click', () => {
+      if (triedCommands.size === 0) {
+        Swal.fire({
+          icon: 'info',
+          title: 'Nothing to reset yet',
+          text: "You haven't completed any stage to reset.",
+          timer: 2000,
+          showConfirmButton: false
+        });
+        return;
+      }
+
+      Swal.fire({
+        title: 'Reset Last Stage?',
+        text: "This will undo your most recent step in the simulation.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, undo last stage',
+        confirmButtonColor: '#03cae4',
+        cancelButtonColor: '#aaa'
+      }).then((res) => {
+        if (res.isConfirmed) {
+          // ✅ Remove last tried command
+          const lastCmd = Array.from(triedCommands).pop();
+          triedCommands.delete(lastCmd);
+
+          // ✅ Remove last two posts (user + system leak)
+          const posts = document.querySelectorAll('.forum .post');
+          if (posts.length >= 2) {
+            posts[posts.length - 1].remove();
+            posts[posts.length - 2].remove();
+          }
+
+          shownSimulationSuccess = false;
+          persistState();
+          updateProgress();
+
+          Swal.fire({
+            icon: 'success',
+            title: 'Stage Reverted',
+            text: 'The last stage has been reset successfully.',
+            timer: 1800,
+            showConfirmButton: false
+          });
+
+          if (triedCommands.size === 0) {
+            document.getElementById('resetStageBtn').disabled = true;
+          }
+        }
+      });
+    });
+  }
+});
+
+/* update Start Quiz button text wrt lock state */
+function updateStartButtonLockLabel(){
+  const startBtn=document.getElementById('startQuizBtn');
+  const now = Date.now();
+  if(now < lockUntil){
+    const remain = Math.ceil((lockUntil - now)/1000);
+    startBtn.textContent = `Start Quiz (locked ${remain}s)`;
+  } else {
+    startBtn.textContent = `Start Quiz`;
+  }
+}
+
+/* ---------- save current app state to localStorage ---------- */
+function persistState(){
+  const commentsHTML = document.querySelector('.forum').innerHTML;
+  const state = {
+    tried: Array.from(triedCommands),
+    quizAttempts,
+    lockUntil,
+    shownSimulationSuccess,
+    commentsHTML  // ✅ Save the full forum content
+  };
+  saveState(state);
+}
+
+/* ---------- Automatic cloud sync (Option 3) ---------- */
+
+// Generate or get userId (stored in cookie for persistence)
+
+/* ---------- copy helper ---------- */
+function copyCmd(text){
+  navigator.clipboard.writeText(text);
+  Swal.fire({
+    toast: true, position: 'top-end', showConfirmButton:false, icon:'success',
+    title: 'Copied to clipboard', timer:1400
+  });
+}
+
+/* ---------- escape helper ---------- */
+function escapeHtml(string) {
+  if(!string) return '';
+  return String(string)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+/* ---------- comment posting / simulation ---------- */
+document.getElementById('postCommentBtn').addEventListener('click', () => {
+  const box = document.getElementById('commentBox');
+  const textRaw = (box.value || '').trim();
+  if (!textRaw) {
+    Swal.fire("⚠️ Empty", "Please type something first.", "warning");
+    return;
+  }
+  const text = textRaw;
+  const commentPanel = document.getElementById('commentPanel');
+
+  const div = document.createElement('div');
+  div.className = 'post sim-post';
+  div.innerHTML = `
+    <div class="meta">
+      <img src="photos/user.jpg" alt="You" class="profile-pic">
+      <strong>You</strong> • just now
+    </div>
+    <div>${escapeHtml(text)}</div>
+  `;
+  forum.insertBefore(div, commentPanel);
+
+  box.value = '';
+
+  const rawKey = text.toLowerCase();
+  if (!exactCommands[rawKey]) {
+  Swal.fire({
+    title: "Invalid",
+    text: "That command isn’t part of this demo. Try one of the example commands.",
+    icon: "error",
+    confirmButtonColor: "#03cae4", // Change this to any hex color
+    confirmButtonText: "OK"
+  });
+  return;
+}
+
+
+  triedCommands.add(rawKey);
+  persistState();
+  updateProgress();
+
+  const sim = exactCommands[rawKey];
+
+  const hacked = document.createElement('div');
+  hacked.className = 'post sim-post';
+  hacked.innerHTML = `
+    <div class="meta"><strong>⚠️ System Leak</strong> • just now</div>
+    <pre class="simdb">${escapeHtml(sim.leak)}</pre>
+    <div class="leak mt-2"><b>💬 Explanation:</b><br><span class="small muted">${escapeHtml(sim.remediation)}</span></div>
+  `;
+  forum.insertBefore(hacked, commentPanel);
+
+  // scroll the explanation into view so user can read it
+  hacked.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+  // ✅ Modified: Show "Simulation Successful" only once, with a delay so user can read the explanation
+  const DELAY_MS = 5000; // change to 2000, 4000 etc. as you prefer
+
+if (triedCommands.size === 3 && !shownSimulationSuccess) {
+  shownSimulationSuccess = true;
+  persistState();
+
+  // show after a short delay so user can read the explanation
+  setTimeout(() => {
+    Swal.fire({
+      icon: 'success',
+      title: 'Simulation Successful!',
+      text: 'You have completed 3 distinct simulated injections. Ready for the quiz?',
+      showDenyButton: true,              // ✅ show "Later" button
+      denyButtonText: 'Later', 
+      confirmButtonText: 'Start Quiz',   // ✅ primary butto          // ✅ secondary button
+      confirmButtonColor: '#03cae4'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        openQuizIfAllowed();             // user clicked Start Quiz
+      } else if (result.isDenied) {
+        // Optional: Do something if user clicks Later, e.g., just close the popup
+        console.log('User chose to start quiz later.');
+      }
+    });
+  }, DELAY_MS);
+}
+
+});
+
+
+/* ---------- Start Quiz button ---------- */
+document.getElementById('startQuizBtn').addEventListener('click', openQuizIfAllowed);
+
+
+
+
+
+/* ---------- quiz submission ---------- */
+document.getElementById('submitQuizBtn').addEventListener('click', () => {
+  const answers = {
+    q1: "a", q2: "a", q3: "a", q4: "a", q5: "a",
+    q6: "a", q7: "a", q8: "a", q9: "a", q10: "a"
+  };
+
+  let score = 0;
+  let unanswered = 0;
+  const submitBtn = document.getElementById('submitQuizBtn');
+
+  for (let i = 1; i <= 10; i++) {
+    const q = 'q' + i;
+    const chosen = document.querySelector(`input[name="${q}"]:checked`);
+    if (!chosen) { unanswered++; continue; }
+    if (chosen.value === answers[q]) score++;
+  }
+
+  if (unanswered > 0) {
+    Swal.fire({
+      icon: 'info',
+      title: 'Please answer all questions',
+      text: `You still have ${unanswered} unanswered question(s).`
+    });
+    return;
+  }
+
+  const passingScore = 8;
+  const passed = score >= passingScore;
+
+  // ✅ Clear selected answers after submission
+  document.querySelectorAll('input[type="radio"]:checked').forEach(r => r.checked = false);
+
+  if (passed) {
+    Swal.fire({
+      icon: 'success',
+      title: '🎉 Quiz Passed!',
+      html: `
+        <p>You scored <b>${score}/10</b> — great job!</p>
+        <div style="display:flex;flex-direction:column;gap:10px;margin-top:10px;">
+          <button id="backDashboardBtn" class="swal2-confirm swal2-styled" style="background:#03cae4;">⬅️ Return to Dashboard</button>
+          <button id="stayHereBtn" class="swal2-styled" style="background:#28a745;color:white;">🏠 Stay on this Page</button>
+        </div>
+      `,
+      showConfirmButton: false,
+      didOpen: () => {
+        const container = Swal.getHtmlContainer();
+
+        // ✅ LocalStorage Sync
+        const DASH_KEY = 'learning_module_state';
+        const moduleKey = 'sql'; // your module name
+        const raw = localStorage.getItem(DASH_KEY);
+        const dashState = raw ? JSON.parse(raw) : {};
+
+        if (!dashState[moduleKey]) {
+          dashState[moduleKey] = { completed: [], simulationDone: false };
+        }
+        dashState[moduleKey].simulationDone = true;
+        if (!dashState[moduleKey].completed.includes('quiz')) {
+          dashState[moduleKey].completed.push('quiz');
+        }
+        localStorage.setItem(DASH_KEY, JSON.stringify(dashState));
+
+        // ✅ Notify Dashboard if Open
+        if (window.BroadcastChannel) {
+          const bc = new BroadcastChannel('learning_module_channel');
+          bc.postMessage({ type: 'module_quiz_done', module: moduleKey });
+          bc.close();
+        }
+
+        // ✅ Back to Dashboard
+        container.querySelector('#backDashboardBtn').addEventListener('click', () => {
+          Swal.fire({
+            title: 'Returning to Dashboard...',
+            icon: 'success',
+            showConfirmButton: false,
+            timer: 1200,
+            timerProgressBar: true,
+            willClose: () => {
+              window.location.href = 'dashboard.html';
+            }
+          });
+        });
+
+        // ✅ Stay Here Button
+        container.querySelector('#stayHereBtn').addEventListener('click', () => {
+  Swal.close();
+
+  // ✅ Send full progress broadcast to dashboard (100%)
+  if (window.BroadcastChannel) {
+    const bc = new BroadcastChannel('learning_module_channel');
+    bc.postMessage({ type: 'module_progress_full', module: 'sql', progress: 100 });
+    bc.close();
+  }
+
+  Swal.fire({
+    toast: true,
+    position: 'top-end',
+    icon: 'success',
+    title: '✅ Quiz completed — module progress updated to 100%',
+    showConfirmButton: false,
+    timer: 2000
+  });
+});
+      }
+    });
+    // Reset cooldown data (if any)
+    quizAttempts = 0;
+    lockUntil = 0;
+    persistState();
+  } else {
+    // ❌ Failed case – cooldown logic
+    quizAttempts++;
+    const baseCooldown = 15;
+    const lockSeconds = baseCooldown * quizAttempts;
+    lockUntil = Date.now() + lockSeconds * 1000;
+    persistState();
+
+    Swal.fire({
+      icon: 'error',
+      title: '❌ Quiz Failed',
+      html: `
+        <p>Your score: <b>${score}/10</b></p>
+        <p>You need at least ${passingScore} to pass.</p>
+        <p>Please wait <b>${lockSeconds}s</b> before retrying.</p>
+      `,
+      confirmButtonText: 'OK',
+      allowOutsideClick: false,
+      allowEscapeKey: false
+    });
+    submitBtn.disabled = true;
+    startCooldownCountdown(lockSeconds, submitBtn);
+  }
+});
+
+/* ---------- cooldown countdown ---------- */
+function startCooldownCountdown(seconds, button) {
+  if (cooldownInterval) clearInterval(cooldownInterval);
+  const end = Date.now() + seconds * 1000;
+
+  cooldownInterval = setInterval(() => {
+    const remain = Math.max(0, Math.ceil((end - Date.now()) / 1000));
+    button.textContent = `Retry available in ${remain}s`;
+
+    if (remain <= 0) {
+      clearInterval(cooldownInterval);
+      cooldownInterval = null;
+      button.disabled = false;
+      button.textContent = 'Submit Quiz';
+      Swal.fire({
+        toast: true,
+        position: 'top-end',
+        icon: 'success',
+        title: '✅ You can now retry the quiz',
+        showConfirmButton: false,
+        timer: 2000
+      });
+    }
+  }, 1000);
+}
+/* ---------- on load: restore UI ---------- */
+(function onLoadRestore(){
+  updateProgress();
+  const now = Date.now();
+  if(lockUntil && now < lockUntil){
+    const remaining = Math.ceil((lockUntil - now)/1000);
+    Swal.fire({ toast:true, position:'top-end', icon:'info', title:`Quiz locked: ${remaining}s remaining`, timer:2000 });
+    startCooldownCountdown(remaining);
+  }
+})();
+window.addEventListener('focus', () => updateStartButtonLockLabel());
+/* ---------- RESET SIMULATION PROGRESS ---------- */
+// 🔁 Reset Simulation button — clears everything including comments and explanations
+document.getElementById("resetSimBtn").addEventListener("click", () => {
+  const progressText = document.getElementById("progressText").textContent;
+
+  // ✅ Prevent reset when progress = 0/3
+  if (progressText.includes("0/3")) {
+    Swal.fire({
+      icon: "info",
+      title: "Nothing to reset yet",
+      text: "You haven’t started the simulation. Try entering some commands first!",
+      timer: 2000,
+      showConfirmButton: false
+    });
+    return; // stop here
+  }
+
+  Swal.fire({
+    title: "Reset Simulation?",
+    text: "This will remove all your posted comments, system leaks, quiz progress, and simulation data.",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#03cae4",
+    cancelButtonColor: "#aaa",
+    confirmButtonText: "Yes, reset it!"
+  }).then((res) => {
+    if (res.isConfirmed) {
+      // Remove dynamic posts (anything inserted before the comment panel)
+      const forum = document.querySelector(".forum");
+      const commentPanel = document.getElementById("commentPanel");
+      const posts = forum.querySelectorAll(".post");
+
+      posts.forEach(p => {
+        if (!p.querySelector(".meta strong")?.textContent.match(/Shai|Jdub|Luguentz/)) {
+          p.remove();
+        }
+      });
+
+      // ✅ Clear simulation + quiz state
+      triedCommands.clear();
+      quizAttempts = 0;
+      lockUntil = 0;
+      shownSimulationSuccess = false;
+
+      // ✅ Clear simulation and quiz progress from storage
+      localStorage.removeItem(STORAGE_KEY);         // simulation data
+      localStorage.removeItem(QUIZ_PROGRESS_KEY);   // quiz answers
+
+      // ✅ Update UI
+      updateProgress();
+      const resetBtn = document.getElementById("resetSimBtn");
+      resetBtn.disabled = true;
+
+      Swal.fire({
+        icon: "success",
+        title: "Simulation Reset",
+        text: "All simulation and quiz data have been cleared. You can start fresh!",
+        timer: 2200,
+        showConfirmButton: false
+      });
+
+      // ✅ Optional: scroll back to the top of the simulation
+      document.querySelector(".login-panel")?.scrollIntoView({ behavior: "smooth" });
+    }
+  });
+});
+window.addEventListener('load', () => {
+  updateProgress(); // Re-checks if Start Quiz should appear
+});
+window.addEventListener("load", () => {
+  const resetBtn = document.getElementById("resetSimBtn");
+  const progress = document.getElementById("progressText").textContent;
+  if (progress.includes("0/3")) {
+    resetBtn.disabled = true;
+  }
+});
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
